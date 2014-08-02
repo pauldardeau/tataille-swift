@@ -12,6 +12,12 @@
 		DA57358A198C0ED500BFDD9C /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DA573589198C0ED500BFDD9C /* Images.xcassets */; };
 		DA57358D198C0ED500BFDD9C /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = DA57358B198C0ED500BFDD9C /* MainMenu.xib */; };
 		DA573599198C0ED500BFDD9C /* tataille_swiftTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA573598198C0ED500BFDD9C /* tataille_swiftTests.swift */; };
+		DA5735A3198C0F3300BFDD9C /* ControlId.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA5735A2198C0F3300BFDD9C /* ControlId.swift */; };
+		DA5735A5198C0F4400BFDD9C /* ControlInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA5735A4198C0F4400BFDD9C /* ControlInfo.swift */; };
+		DA5735A7198C0F5500BFDD9C /* DisplayEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA5735A6198C0F5500BFDD9C /* DisplayEngine.swift */; };
+		DA5735A9198C0F6800BFDD9C /* CocoaDisplayEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA5735A8198C0F6800BFDD9C /* CocoaDisplayEngine.swift */; };
+		DA5735AB198C0F7500BFDD9C /* CocoaDisplayEngineWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA5735AA198C0F7500BFDD9C /* CocoaDisplayEngineWindow.swift */; };
+		DA5735AD198C0F8700BFDD9C /* DisplayEngineWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA5735AC198C0F8700BFDD9C /* DisplayEngineWindow.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -34,6 +40,12 @@
 		DA573592198C0ED500BFDD9C /* tataille-swiftTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "tataille-swiftTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		DA573597198C0ED500BFDD9C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		DA573598198C0ED500BFDD9C /* tataille_swiftTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = tataille_swiftTests.swift; sourceTree = "<group>"; };
+		DA5735A2198C0F3300BFDD9C /* ControlId.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ControlId.swift; sourceTree = "<group>"; };
+		DA5735A4198C0F4400BFDD9C /* ControlInfo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ControlInfo.swift; sourceTree = "<group>"; };
+		DA5735A6198C0F5500BFDD9C /* DisplayEngine.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DisplayEngine.swift; sourceTree = "<group>"; };
+		DA5735A8198C0F6800BFDD9C /* CocoaDisplayEngine.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CocoaDisplayEngine.swift; sourceTree = "<group>"; };
+		DA5735AA198C0F7500BFDD9C /* CocoaDisplayEngineWindow.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CocoaDisplayEngineWindow.swift; sourceTree = "<group>"; };
+		DA5735AC198C0F8700BFDD9C /* DisplayEngineWindow.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DisplayEngineWindow.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -79,6 +91,12 @@
 				DA573589198C0ED500BFDD9C /* Images.xcassets */,
 				DA57358B198C0ED500BFDD9C /* MainMenu.xib */,
 				DA573583198C0ED500BFDD9C /* Supporting Files */,
+				DA5735A2198C0F3300BFDD9C /* ControlId.swift */,
+				DA5735A4198C0F4400BFDD9C /* ControlInfo.swift */,
+				DA5735A6198C0F5500BFDD9C /* DisplayEngine.swift */,
+				DA5735AC198C0F8700BFDD9C /* DisplayEngineWindow.swift */,
+				DA5735A8198C0F6800BFDD9C /* CocoaDisplayEngine.swift */,
+				DA5735AA198C0F7500BFDD9C /* CocoaDisplayEngineWindow.swift */,
 			);
 			path = "tataille-swift";
 			sourceTree = "<group>";
@@ -208,6 +226,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DA5735AD198C0F8700BFDD9C /* DisplayEngineWindow.swift in Sources */,
+				DA5735A9198C0F6800BFDD9C /* CocoaDisplayEngine.swift in Sources */,
+				DA5735A3198C0F3300BFDD9C /* ControlId.swift in Sources */,
+				DA5735A5198C0F4400BFDD9C /* ControlInfo.swift in Sources */,
+				DA5735AB198C0F7500BFDD9C /* CocoaDisplayEngineWindow.swift in Sources */,
+				DA5735A7198C0F5500BFDD9C /* DisplayEngine.swift in Sources */,
 				DA573588198C0ED500BFDD9C /* AppDelegate.swift in Sources */,
 				DA573586198C0ED500BFDD9C /* main.swift in Sources */,
 			);
