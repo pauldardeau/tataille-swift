@@ -9,6 +9,11 @@
 import Foundation
 
 public class ControlInfo {
+    
+    // foreground color
+    // background color
+    // font
+    // audio clip
 
     var controlType: CocoaDisplayEngine.ControlType
     public var cid: ControlId
@@ -19,7 +24,7 @@ public class ControlInfo {
     public var values: String?
     public var valuesDelimiter: String?
     public var rect: NSRect
-    public var isSelected = false
+    public var isSelected = false  // only for checkbox? if so, probably remove
     public var isVisible = true
     public var isEnabled = true
 

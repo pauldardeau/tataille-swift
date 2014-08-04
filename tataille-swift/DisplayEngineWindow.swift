@@ -58,10 +58,12 @@ protocol DisplayEngineWindow {
     func setPos(point: NSPoint, cid: ControlId) -> Bool
     func setRect(rect: NSRect, cid: ControlId) -> Bool
     
+    func addRow(rowText: String, cid: ControlId) -> Bool
+
     func setCheckBoxHandler(handler: CheckBoxHandler, cid: ControlId) -> Bool
     func setComboBoxHandler(handler: ComboBoxHandler, cid: ControlId) -> Bool
     func setListBoxHandler(handler: ListBoxHandler, cid: ControlId) -> Bool
-    //func setListSelectionHandler(handler: ListSelectionHandler, cid: ControlId) -> Bool
+    func setListViewHandler(handler: ListViewHandler, cid: ControlId) -> Bool
     func setPushButtonHandler(handler: PushButtonHandler, cid: ControlId) -> Bool
     func setSliderHandler(handler: SliderHandler, cid: ControlId) -> Bool
     func setTabViewHandler(handler: TabViewHandler, cid: ControlId) -> Bool

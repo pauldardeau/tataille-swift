@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		DA2C539E199033BB0053F262 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA2C539D199033BB0053F262 /* Logger.swift */; };
 		DA573586198C0ED500BFDD9C /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA573585198C0ED500BFDD9C /* main.swift */; };
 		DA573588198C0ED500BFDD9C /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA573587198C0ED500BFDD9C /* AppDelegate.swift */; };
 		DA57358A198C0ED500BFDD9C /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DA573589198C0ED500BFDD9C /* Images.xcassets */; };
@@ -24,6 +25,7 @@
 		DA5735B5198EF53F00BFDD9C /* SliderHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA5735B4198EF53F00BFDD9C /* SliderHandler.swift */; };
 		DA5735B7198FB61500BFDD9C /* ListBoxHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA5735B6198FB61500BFDD9C /* ListBoxHandler.swift */; };
 		DA5735B9198FB75500BFDD9C /* ComboBoxHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA5735B8198FB75500BFDD9C /* ComboBoxHandler.swift */; };
+		DA5735BB198FE6CE00BFDD9C /* ListViewHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA5735BA198FE6CE00BFDD9C /* ListViewHandler.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -37,6 +39,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		DA2C539D199033BB0053F262 /* Logger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
 		DA573580198C0ED500BFDD9C /* tataille-swift.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "tataille-swift.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		DA573584198C0ED500BFDD9C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		DA573585198C0ED500BFDD9C /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
@@ -58,6 +61,7 @@
 		DA5735B4198EF53F00BFDD9C /* SliderHandler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SliderHandler.swift; sourceTree = "<group>"; };
 		DA5735B6198FB61500BFDD9C /* ListBoxHandler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ListBoxHandler.swift; sourceTree = "<group>"; };
 		DA5735B8198FB75500BFDD9C /* ComboBoxHandler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ComboBoxHandler.swift; sourceTree = "<group>"; };
+		DA5735BA198FE6CE00BFDD9C /* ListViewHandler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ListViewHandler.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -103,18 +107,20 @@
 				DA573589198C0ED500BFDD9C /* Images.xcassets */,
 				DA57358B198C0ED500BFDD9C /* MainMenu.xib */,
 				DA573583198C0ED500BFDD9C /* Supporting Files */,
+				DA5735AE198ED34200BFDD9C /* CheckBoxHandler.swift */,
+				DA5735A8198C0F6800BFDD9C /* CocoaDisplayEngine.swift */,
+				DA5735AA198C0F7500BFDD9C /* CocoaDisplayEngineWindow.swift */,
+				DA5735B8198FB75500BFDD9C /* ComboBoxHandler.swift */,
 				DA5735A2198C0F3300BFDD9C /* ControlId.swift */,
 				DA5735A4198C0F4400BFDD9C /* ControlInfo.swift */,
 				DA5735A6198C0F5500BFDD9C /* DisplayEngine.swift */,
 				DA5735AC198C0F8700BFDD9C /* DisplayEngineWindow.swift */,
-				DA5735A8198C0F6800BFDD9C /* CocoaDisplayEngine.swift */,
-				DA5735AA198C0F7500BFDD9C /* CocoaDisplayEngineWindow.swift */,
-				DA5735AE198ED34200BFDD9C /* CheckBoxHandler.swift */,
-				DA5735B0198ED37800BFDD9C /* PushButtonHandler.swift */,
-				DA5735B2198EF43000BFDD9C /* TabViewHandler.swift */,
-				DA5735B4198EF53F00BFDD9C /* SliderHandler.swift */,
 				DA5735B6198FB61500BFDD9C /* ListBoxHandler.swift */,
-				DA5735B8198FB75500BFDD9C /* ComboBoxHandler.swift */,
+				DA5735BA198FE6CE00BFDD9C /* ListViewHandler.swift */,
+				DA2C539D199033BB0053F262 /* Logger.swift */,
+				DA5735B0198ED37800BFDD9C /* PushButtonHandler.swift */,
+				DA5735B4198EF53F00BFDD9C /* SliderHandler.swift */,
+				DA5735B2198EF43000BFDD9C /* TabViewHandler.swift */,
 			);
 			path = "tataille-swift";
 			sourceTree = "<group>";
@@ -245,11 +251,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				DA5735AD198C0F8700BFDD9C /* DisplayEngineWindow.swift in Sources */,
+				DA5735BB198FE6CE00BFDD9C /* ListViewHandler.swift in Sources */,
 				DA5735AF198ED34200BFDD9C /* CheckBoxHandler.swift in Sources */,
 				DA5735A9198C0F6800BFDD9C /* CocoaDisplayEngine.swift in Sources */,
 				DA5735B5198EF53F00BFDD9C /* SliderHandler.swift in Sources */,
 				DA5735A3198C0F3300BFDD9C /* ControlId.swift in Sources */,
 				DA5735B1198ED37800BFDD9C /* PushButtonHandler.swift in Sources */,
+				DA2C539E199033BB0053F262 /* Logger.swift in Sources */,
 				DA5735A5198C0F4400BFDD9C /* ControlInfo.swift in Sources */,
 				DA5735AB198C0F7500BFDD9C /* CocoaDisplayEngineWindow.swift in Sources */,
 				DA5735A7198C0F5500BFDD9C /* DisplayEngine.swift in Sources */,
@@ -445,6 +453,7 @@
 				DA57359E198C0ED500BFDD9C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		DA57359F198C0ED500BFDD9C /* Build configuration list for PBXNativeTarget "tataille-swiftTests" */ = {
 			isa = XCConfigurationList;
@@ -453,6 +462,7 @@
 				DA5735A1198C0ED500BFDD9C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

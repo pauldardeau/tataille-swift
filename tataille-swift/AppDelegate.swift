@@ -47,10 +47,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var cidRemoveButton: ControlId!
     var cidOrderButton: ControlId!
     var cidOrderTotal: ControlId!
+    var listMenuItems: [String]!
     var listPaymentMethods: [String]!
     var paymentMethod: String!
     var isDelivery: Bool = false
     var isRushOrder: Bool = false
+    var selectedMenuItemIndex = -1
+    var selectedOrderItemIndex = -1
 
     //**************************************************************************
 
@@ -58,6 +61,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Insert code here to initialize your application
         self.displayEngine = CocoaDisplayEngine(mainWindow:self.window!)
         self.listPaymentMethods = PAYMENT_METHOD_VALUES.componentsSeparatedByString(",")
+        self.listMenuItems = MENU_ITEM_VALUES.componentsSeparatedByString(",")
         self.startApp();
     }
 
@@ -66,7 +70,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationWillTerminate(aNotification: NSNotification?) {
         // Insert code here to tear down your application
     }
-    
     
     //**************************************************************************
     //**************************************************************************
@@ -162,9 +165,80 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     //**************************************************************************
     //**************************************************************************
+    
+    class ListMenuSelectionHandler : ListBoxHandler {
+        var appDelegate: AppDelegate
+        
+        init(appDelegate: AppDelegate) {
+            self.appDelegate = appDelegate
+        }
+
+        func listBoxItemSelected(itemIndex: Int) {
+            self.appDelegate.onListMenuSelection(itemIndex)
+        }
+    }
+
+    //**************************************************************************
+    //**************************************************************************
+    
+    class OrderListViewHandler : ListViewHandler {
+        var appDelegate: AppDelegate
+        
+        init(appDelegate: AppDelegate) {
+            self.appDelegate = appDelegate
+        }
+        
+        func listViewRowSelected(rowIndex: Int) {
+            self.appDelegate.onListViewOrderRowSelection(rowIndex)
+        }
+    }
+
+    //**************************************************************************
+    //**************************************************************************
+
+    func onListMenuSelection(itemIndex: Int) {
+        println("menu item selected: \(itemIndex)")
+
+        self.selectedMenuItemIndex = itemIndex
+        
+        var buttonEnabled = true
+        if itemIndex == -1 {
+            buttonEnabled = false
+        }
+        
+        self.displayEngine!.setEnabled(buttonEnabled, cid:self.cidAddButton)
+    }
+
+    //**************************************************************************
+    
+    func onListViewOrderRowSelection(itemIndex: Int) {
+        println("order item selected: \(itemIndex)")
+        
+        self.selectedOrderItemIndex = itemIndex
+        
+        var buttonEnabled = true
+        if itemIndex == -1 {
+            buttonEnabled = false
+        }
+
+        self.displayEngine!.setEnabled(buttonEnabled, cid:self.cidRemoveButton)
+    }
+
+    //**************************************************************************
 
     func onAddClicked() {
         println("add clicked")
+        
+        if let cidMenu = self.cidListBox {
+            if let cidOrderItems = self.cidListView {
+                let selectedMenuItem = self.listMenuItems![self.selectedMenuItemIndex]
+                println("add menu item to order '\(selectedMenuItem)'")
+                let itemQty = "1"
+                let itemPrice = "0.00"
+                let itemRow = [itemQty, selectedMenuItem, itemPrice]
+                self.displayEngine!.addRow("", cid:self.cidListView)
+            }
+        }
     }
 
     //**************************************************************************
@@ -272,12 +346,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         ci.valuesDelimiter = VALUES_DELIMITER
         ci.helpCaption = "list of items available for order"
         de.createListBox(ci)
-        //    m_de.setListSelectionHandler(m_cidListBox, new ListSelectionHandler() {
-        //        @Override
-        //        public void listItemSelected(int selectionIndex, String selectedValue) {
-        //            System.out.println("list item: " + selectionIndex + ", '" + selectedValue + "'");
-        //        }
-        //    });
+        de.setListBoxHandler(ListMenuSelectionHandler(appDelegate: self), cid: self.cidListBox)
     
         x += LIST_WIDTH
         x += 30
@@ -290,6 +359,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         ci.valuesDelimiter = VALUES_DELIMITER
         ci.helpCaption = "list of items on order"
         de.createListView(ci)
+        de.setListViewHandler(OrderListViewHandler(appDelegate: self), cid: self.cidListView)
     
         y += LISTVIEW_HEIGHT
         y += 30
@@ -300,7 +370,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         ci = ControlInfo(cid:self.cidAddButton)
         ci.rect = NSMakeRect(x, y, BTN_ADD_WIDTH, BTN_ADD_HEIGHT)
         ci.text = "Add Item"
-        //ci.isEnabled = false;
+        ci.isEnabled = false;
         de.createPushButton(ci)
         de.setPushButtonHandler(AddPushButtonHandler(appDelegate: self), cid: self.cidAddButton)
     
@@ -311,7 +381,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         ci = ControlInfo(cid:self.cidRemoveButton)
         ci.rect = NSMakeRect(x, y, BTN_REMOVE_WIDTH, BTN_REMOVE_HEIGHT)
         ci.text = "Remove Item"
-        //ci.isEnabled = false
+        ci.isEnabled = false
         de.createPushButton(ci)
         de.setPushButtonHandler(RemovePushButtonHandler(appDelegate: self), cid: self.cidRemoveButton)
     
@@ -321,7 +391,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         ci = ControlInfo(cid:self.cidOrderButton)
         ci.rect = NSMakeRect(x, y, BTN_ORDER_WIDTH, BTN_ORDER_HEIGHT)
         ci.text = "Place Order"
-        //ci.isEnabled = false
+        ci.isEnabled = false
         de.createPushButton(ci)
         de.setPushButtonHandler(OrderPushButtonHandler(appDelegate: self), cid: self.cidOrderButton)
     }

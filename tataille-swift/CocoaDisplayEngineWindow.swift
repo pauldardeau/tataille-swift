@@ -10,6 +10,13 @@ import Foundation
 import Cocoa
 
 
+// Enhancements
+// ============
+// status bar at bottom of window:
+//    [theWindow setContentBorderThickness:24.0 forEdge:NSMinYEdge];
+//    Don't forget to set autorecalculatesContentBorderThickness to NO
+//    developer.apple.com/releasenotes/Cocoa/AppKit.html
+
 class CocoaDisplayEngineWindow: NSObject,
                                 DisplayEngineWindow,
                                 NSComboBoxDelegate,
@@ -27,10 +34,12 @@ class CocoaDisplayEngineWindow: NSObject,
     var mapCheckBoxHandlers: Dictionary<Int, CheckBoxHandler>
     var mapComboBoxHandlers: Dictionary<Int, ComboBoxHandler>
     var mapListBoxHandlers: Dictionary<Int, ListBoxHandler>
+    var mapListViewHandlers: Dictionary<Int, ListViewHandler>
     var mapPushButtonHandlers: Dictionary<Int, PushButtonHandler>
     var mapSliderHandlers: Dictionary<Int, SliderHandler>
     var mapTabViewHandlers: Dictionary<Int, TabViewHandler>
     var _translateYValues = true
+    var logger = Logger(logLevel:Logger.LogLevel.Debug)
 
     //**************************************************************************
     
@@ -50,15 +59,49 @@ class CocoaDisplayEngineWindow: NSObject,
         self.mapCheckBoxHandlers = Dictionary<Int, CheckBoxHandler>()
         self.mapComboBoxHandlers = Dictionary<Int, ComboBoxHandler>()
         self.mapListBoxHandlers = Dictionary<Int, ListBoxHandler>()
+        self.mapListViewHandlers = Dictionary<Int, ListViewHandler>()
         self.mapPushButtonHandlers = Dictionary<Int, PushButtonHandler>()
         self.mapSliderHandlers = Dictionary<Int, SliderHandler>()
         self.mapTabViewHandlers = Dictionary<Int, TabViewHandler>()
     }
 
     //**************************************************************************
+    
+    func tableViewSelectionDidChange(notification: NSNotification!) {
+        self.logger.debug("tableViewSelectionDidChange: combo box selection did change")
+        
+        if let aNotification = notification {
+            if let obj: AnyObject = aNotification.object {
+                if let tableView = obj as? NSTableView {
+                    if let controlId = self.mapControlToControlId[tableView.hashValue] {
+                        let selectedRowIndex = tableView.selectedRow
+                        if let listBoxHandler = self.mapListBoxHandlers[controlId] {
+                            listBoxHandler.listBoxItemSelected(selectedRowIndex)
+                        } else {
+                            if let listViewHandler = self.mapListViewHandlers[controlId] {
+                                listViewHandler.listViewRowSelected(selectedRowIndex)
+                            } else {
+                                self.logger.debug("tableViewSelectionDidChange: no handler registered for table view")
+                            }
+                        }
+                    } else {
+                        self.logger.error("tableViewSelectionDidChange: unable to find control id for table view")
+                    }
+                } else {
+                    self.logger.error("tableViewSelectionDidChange: control is not a NSTableView")
+                }
+            } else {
+                self.logger.error("tableViewSelectionDidChange: no object available in notification")
+            }
+        } else {
+            self.logger.error("tableViewSelectionDidChange: no notification object available")
+        }
+    }
+
+    //**************************************************************************
 
     func comboBoxSelectionDidChange(notification: NSNotification!) {
-        println("combo box selection did change")
+        self.logger.debug("comboBoxSelectionDidChange: combo box selection did change")
         
         if let aNotification = notification {
             if let obj: AnyObject = aNotification.object {
@@ -67,19 +110,19 @@ class CocoaDisplayEngineWindow: NSObject,
                         if let handler = self.mapComboBoxHandlers[controlId] {
                             handler.combBoxItemSelected(comboBox.indexOfSelectedItem)
                         } else {
-                            println("no handler registered for combobox")
+                            self.logger.debug("comboBoxSelectionDidChange: no handler registered for combobox")
                         }
                     } else {
-                        println("unable to find control id for combo box")
+                        self.logger.error("comboBoxSelectionDidChange: unable to find control id for combo box")
                     }
                 } else {
-                    println("warning: control is not a NSComboBox")
+                    self.logger.error("comboBoxSelectionDidChange: control is not a NSComboBox")
                 }
             } else {
-                println("no object available in notification")
+                self.logger.error("comboBoxSelectionDidChange: no object available in notification")
             }
         } else {
-            println("no notification object available")
+            self.logger.error("comboBoxSelectionDidChange: no notification object available")
         }
     }
     
@@ -187,7 +230,7 @@ class CocoaDisplayEngineWindow: NSObject,
         
         if let groupName = ci.groupName {
             var optListControls = self.mapGroupControls[groupName]
-            if optListControls {
+            if optListControls != nil {
                 var listControls = optListControls!
                 listControls.append(control)
             } else {
@@ -208,7 +251,7 @@ class CocoaDisplayEngineWindow: NSObject,
                 return countElements(listValues)
             } else {
                 if let listViewValues = self.mapListViewDataSources[hash] {
-                    return 10 //return countElements(listViewValues)
+                    return 1 //countElements(listViewValues)
                 } else {
                     return 3
                 }
@@ -249,10 +292,37 @@ class CocoaDisplayEngineWindow: NSObject,
                    row rowIndex: Int) -> NSView! {
         var view: NSView!
         if let tv = aTableView {
-            var v: AnyObject! = tv.makeViewWithIdentifier("List", owner: self)
-            if let tcv = v as? NSTableCellView {
-                tcv.textField.stringValue = "Foo"
-                view = tcv
+            var tf: NSTextField!
+            var optView: AnyObject! = tv.makeViewWithIdentifier("TVCTF", owner: self)
+            if let aTextField = optView as? NSTextField {
+                tf = aTextField
+            } else {
+                tf = NSTextField(frame:CGRectZero)
+                tf.bezeled = false
+                tf.drawsBackground = false
+                tf.editable = false
+                tf.selectable = false
+            }
+            
+            if let textField = tf {
+                // is it a listbox?
+                let hash = tv.hashValue
+                if let listValues = self.mapListBoxDataSources[hash] {
+                    textField.stringValue = listValues[rowIndex]
+                } else {
+                    if let listRowValues = self.mapListViewDataSources[hash] {
+                        if rowIndex < countElements(listRowValues) {
+                            let rowValues = listRowValues[rowIndex]
+                            textField.stringValue = "value"
+                        } else {
+                            textField.stringValue = ""
+                        }
+                    } else {
+                        textField.stringValue = ""
+                    }
+                }
+                
+                view = tf
             }
         }
                     
@@ -381,16 +451,16 @@ class CocoaDisplayEngineWindow: NSObject,
     //**************************************************************************
 
     func checkBoxToggled(obj:NSButton) {
-        println("check box toggled")
+        self.logger.debug("checkBoxToggled: check box toggled")
         
         if let controlId = self.mapControlToControlId[obj.hashValue] {
             if let handler = self.mapCheckBoxHandlers[controlId] {
                 handler.checkBoxToggled(true)
             } else {
-                println("no handler registered for checkbox")
+                self.logger.debug("checkBoxToggled: no handler registered for checkbox")
             }
         } else {
-            println("unable to find control id for checkbox")
+            self.logger.error("checkBoxToggled: unable to find control id for checkbox")
         }
     }
 
@@ -561,6 +631,7 @@ class CocoaDisplayEngineWindow: NSObject,
             }
             
             tableView.setDataSource(self)
+            tableView.setDelegate(self)
             
             ci.controlType = CocoaDisplayEngine.ControlType.ListBox
             self.populateControl(tableView, ci:ci)
@@ -580,29 +651,26 @@ class CocoaDisplayEngineWindow: NSObject,
             let viewRect = self.rectForCi(ci)
             var scrollView = NSScrollView(frame: viewRect)
             var tableView = NSTableView(frame: viewRect)
-            
             let hash = tableView.hashValue
             
             scrollView.hasVerticalScroller = true
             scrollView.hasHorizontalScroller = true
             scrollView.documentView = tableView
-            //scrollView.autoresizesSubviews = true
+            scrollView.autoresizesSubviews = true
 
             tableView.usesAlternatingRowBackgroundColors = true
             tableView.columnAutoresizingStyle =
                 NSTableViewColumnAutoresizingStyle.UniformColumnAutoresizingStyle
             tableView.rowHeight = 17.0
-            //tableView.autoresizesSubviews = true
+            tableView.autoresizesSubviews = true
             
             self.mapListViewDataSources[hash] = [[String]]()
-
-
             
             if ci.haveValues() {
                 var listValues = self.valuesFromCi(ci)!
                 let tableHeaderViewRect = NSMakeRect(0.0, 0.0, NSWidth(ci.rect), 22.0)
                 var tableHeaderView = NSTableHeaderView(frame:tableHeaderViewRect)
-                //tableHeaderView.autoresizesSubviews = true
+                tableHeaderView.autoresizesSubviews = true
                 tableView.headerView = tableHeaderView
                 tableView.addSubview(tableHeaderView)
                 
@@ -613,12 +681,12 @@ class CocoaDisplayEngineWindow: NSObject,
                     //headerCell.setStringValue(colText, resolvingEntities: false)
                     tableView.addTableColumn(tableColumn)
                 }
-
-                tableView.setDataSource(self)
-                //tableView.setDelegate(self)
-                tableView.setNeedsDisplay()
             }
-            
+
+            tableView.setDataSource(self)
+            tableView.setDelegate(self)
+            tableView.setNeedsDisplay()
+
             ci.controlType = CocoaDisplayEngine.ControlType.ListView
             self.populateControl(tableView, ci:ci)
             self.registerControl(tableView, ci:ci)
@@ -689,16 +757,16 @@ class CocoaDisplayEngineWindow: NSObject,
     //**************************************************************************
 
     func pushButtonClicked(obj:NSButton) {
-        println("push button clicked")
+        self.logger.debug("pushButtonClicked: push button clicked")
 
         if let controlId = self.mapControlToControlId[obj.hashValue] {
             if let handler = self.mapPushButtonHandlers[controlId] {
                 handler.pushButtonClicked()
             } else {
-                println("no handler registered for push button")
+                self.logger.debug("pushButtonClicked: no handler registered for push button")
             }
         } else {
-            println("can't map push button to cid")
+            self.logger.error("pushButtonClicked: can't map push button to cid")
         }
     }
     
@@ -876,7 +944,7 @@ class CocoaDisplayEngineWindow: NSObject,
 
     func setVisible(isVisible: Bool, groupName: String) -> Bool {
         var optGroupControls = self.controlsForGroup(groupName)
-        if optGroupControls {
+        if optGroupControls != nil {
             let isHidden = !isVisible
             
             for view in optGroupControls! {
@@ -942,7 +1010,7 @@ class CocoaDisplayEngineWindow: NSObject,
 
     func setEnabled(isEnabled: Bool, groupName: String) -> Bool {
         var optGroupControls = self.controlsForGroup(groupName)
-        if optGroupControls {
+        if optGroupControls != nil {
             for view in optGroupControls! {
                 if let control = view as? NSControl {
                     control.enabled = isEnabled
@@ -993,6 +1061,24 @@ class CocoaDisplayEngineWindow: NSObject,
     }
 
     //**************************************************************************
+    
+    func addRow(rowText: String, cid: ControlId) -> Bool {
+        if let view = self.controlFromCid(cid) {
+            if let listView = view as? NSTableView {
+                var dataSource = self.mapListViewDataSources[cid.controlId]
+                if dataSource != nil {
+                    let parsedValues: [String] = rowText.componentsSeparatedByString(",")
+                    dataSource!.append(parsedValues)
+                    listView.needsDisplay = true
+                    return true
+                }
+            }
+        }
+
+        return false
+    }
+
+    //**************************************************************************
 
     func setCheckBoxHandler(handler: CheckBoxHandler, cid: ControlId) -> Bool {
         let controlId = cid.controlId
@@ -1028,6 +1114,18 @@ class CocoaDisplayEngineWindow: NSObject,
         return false
     }
 
+    //**************************************************************************
+
+    func setListViewHandler(handler: ListViewHandler, cid: ControlId) -> Bool {
+        let controlId = cid.controlId
+        if controlId > -1 {
+            self.mapListViewHandlers[controlId] = handler
+            return true
+        }
+        
+        return false
+    }
+    
     //**************************************************************************
 
     func setPushButtonHandler(handler: PushButtonHandler, cid: ControlId) -> Bool {

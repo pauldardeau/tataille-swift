@@ -10,7 +10,7 @@ import Foundation
 import Cocoa
 
 
-class CocoaDisplayEngine: DisplayEngine {
+public class CocoaDisplayEngine: DisplayEngine {
     
     public enum ControlType {
         case Unknown
@@ -32,6 +32,7 @@ class CocoaDisplayEngine: DisplayEngine {
         case TextView
         case Tree
     }
+    
     
     var mapIdToWindows = [Int: CocoaDisplayEngineWindow]()
     var _translateYValues = true
@@ -512,6 +513,16 @@ class CocoaDisplayEngine: DisplayEngine {
     }
 
     //**************************************************************************
+    
+    func addRow(rowText: String, cid: ControlId) -> Bool {
+        if let window = self.windowFromCid(cid) {
+            return window.addRow(rowText, cid:cid)
+        } else {
+            return false
+        }
+    }
+
+    //**************************************************************************
 
     func setCheckBoxHandler(handler: CheckBoxHandler, cid: ControlId) -> Bool {
         if let window = self.windowFromCid(cid) {
@@ -543,13 +554,13 @@ class CocoaDisplayEngine: DisplayEngine {
 
     //**************************************************************************
 
-//    func setListSelectionHandler(handler: ListSelectionHandler, cid: ControlId) -> Bool {
-//        if let window = self.windowFromCid(cid) {
-//            return window.setListSelectionHandler(handler, cid:cid)
-//        } else {
-//            return false
-//        }
-//    }
+    func setListViewHandler(handler: ListViewHandler, cid: ControlId) -> Bool {
+        if let window = self.windowFromCid(cid) {
+            return window.setListViewHandler(handler, cid:cid)
+        } else {
+            return false
+        }
+    }
 
     //**************************************************************************
 
