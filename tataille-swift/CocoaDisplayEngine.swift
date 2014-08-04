@@ -34,11 +34,20 @@ class CocoaDisplayEngine: DisplayEngine {
     }
     
     var mapIdToWindows = [Int: CocoaDisplayEngineWindow]()
+    var _translateYValues = true
 
     
     init(mainWindow: NSWindow) {
         var deWindow = CocoaDisplayEngineWindow(window:mainWindow, windowId:0)
         self.mapIdToWindows[0] = deWindow
+    }
+    
+    func setTranslateYValues(translateYValues: Bool) {
+        self._translateYValues = translateYValues
+    }
+    
+    func translateYValues() -> Bool {
+        return self._translateYValues
     }
     
     func windowFromId(windowId: Int) -> CocoaDisplayEngineWindow? {
@@ -324,6 +333,14 @@ class CocoaDisplayEngine: DisplayEngine {
         }
     }
     
+    func setFocus(cid: ControlId) -> Bool {
+        if let window = self.windowFromCid(cid) {
+            return window.setFocus(cid)
+        } else {
+            return false
+        }
+    }
+    
     func enableControl(cid: ControlId) -> Bool {
         return self.setEnabled(true, cid:cid)
     }
@@ -388,14 +405,14 @@ class CocoaDisplayEngine: DisplayEngine {
         }
     }
     
-//    func setCheckBoxHandler(handler: CheckBoxHandler, cid: ControlId) -> Bool {
-//        if let window = self.windowFromCid(cid) {
-//            return window.setCheckBoxHandler(handler, cid:cid)
-//        } else {
-//            return false
-//        }
-//    }
-//    
+    func setCheckBoxHandler(handler: CheckBoxHandler, cid: ControlId) -> Bool {
+        if let window = self.windowFromCid(cid) {
+            return window.setCheckBoxHandler(handler, cid:cid)
+        } else {
+            return false
+        }
+    }
+    
 //    func setListSelectionHandler(handler: ListSelectionHandler, cid: ControlId) -> Bool {
 //        if let window = self.windowFromCid(cid) {
 //            return window.setListSelectionHandler(handler, cid:cid)
@@ -403,29 +420,29 @@ class CocoaDisplayEngine: DisplayEngine {
 //            return false
 //        }
 //    }
-//    
-//    func setPushButtonHandler(handler: PushButtonHandler, cid: ControlId) -> Bool {
-//        if let window = self.windowFromCid(cid) {
-//            return window.setPushButtonHandler(handler, cid:cid)
-//        } else {
-//            return false
-//        }
-//    }
-//    
-//    func setSliderHandler(handler: SliderHandler, cid: ControlId) -> Bool {
-//        if let window = self.windowFromCid(cid) {
-//            return window.setSliderHandler(handler, cid:cid)
-//        } else {
-//            return false
-//        }
-//    }
-//    
-//    func setTabViewHandler(handler: TabViewHandler, cid: ControlId) -> Bool {
-//        if let window = self.windowFromCid(cid) {
-//            return window.setTabViewHandler(handler, cid:cid)
-//        } else {
-//            return false
-//        }
-//    }
+    
+    func setPushButtonHandler(handler: PushButtonHandler, cid: ControlId) -> Bool {
+        if let window = self.windowFromCid(cid) {
+            return window.setPushButtonHandler(handler, cid:cid)
+        } else {
+            return false
+        }
+    }
+    
+    func setSliderHandler(handler: SliderHandler, cid: ControlId) -> Bool {
+        if let window = self.windowFromCid(cid) {
+            return window.setSliderHandler(handler, cid:cid)
+        } else {
+            return false
+        }
+    }
+    
+    func setTabViewHandler(handler: TabViewHandler, cid: ControlId) -> Bool {
+        if let window = self.windowFromCid(cid) {
+            return window.setTabViewHandler(handler, cid:cid)
+        } else {
+            return false
+        }
+    }
 
 }

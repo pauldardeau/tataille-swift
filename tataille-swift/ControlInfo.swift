@@ -34,6 +34,10 @@ public class ControlInfo {
         return self.cid.isValid()
     }
     
+    func haveParent() -> Bool {
+        return self.cid.haveParent()
+    }
+    
     func getValues(defaultDelimiter: String) -> [String]? {
         if let unWrappedValues = self.values {
             if let unWrappedDelimiter = self.valuesDelimiter {

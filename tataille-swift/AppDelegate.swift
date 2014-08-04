@@ -56,7 +56,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func startApp() {
-        let TOP: CGFloat = WINDOW_HEIGHT - 60 - 15
+        let TOP: CGFloat = 75
         let LBL_CUSTOMER_HEIGHT = LABEL_HEIGHT
         let LISTVIEW_HEIGHT = LIST_HEIGHT
         let BTN_ADD_WIDTH = BUTTON_WIDTH
@@ -74,7 +74,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         var controlId: Int = 0
         var x = LEFT_EDGE
         var y = TOP
-        var topRowText = y - 8
+        var topRowText = y + 4
     
         self.cidCustomerLabel = ControlId(windowId:windowId, controlId:controlId++)
         ci = ControlInfo(cid:self.cidCustomerLabel!)
@@ -133,8 +133,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         self.displayEngine.createStaticText(ci)
     
         x = LEFT_EDGE
-        y -= EF_CUSTOMER_HEIGHT
-        y -= 15
+        y += EF_CUSTOMER_HEIGHT
+        y += 15
     
         self.cidListBox = ControlId(windowId:windowId, controlId:controlId++)
         ci = ControlInfo(cid:self.cidListBox)
@@ -155,14 +155,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
         self.cidListView = ControlId(windowId:windowId, controlId:controlId++)
         ci = ControlInfo(cid:self.cidListView)
-        ci.rect = NSMakeRect(x, y, LISTVIEW_WIDTH, LISTVIEW_HEIGHT)
+        ci.rect = NSMakeRect(x, y, LISTVIEW_WIDTH, 26) //LISTVIEW_HEIGHT)
+        ci.text = "Group"
         ci.values = "Qty,Item,Price"
         ci.valuesDelimiter = VALUES_DELIMITER
         ci.helpCaption = "list of items on order"
-        self.displayEngine.createListView(ci)
+        self.displayEngine.createComboBox(ci)
     
-        y -= LISTVIEW_HEIGHT
-        y -= 30
+        y += LISTVIEW_HEIGHT
+        y += 30
     
         x = LEFT_EDGE
     

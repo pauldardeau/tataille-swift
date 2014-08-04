@@ -17,10 +17,11 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
     var windowId: Int
     var mapControlIdToControl: Dictionary<Int, NSView>
     var mapGroupControls: Dictionary<String, [NSView]>
-    //@property (strong, nonatomic) NSMutableDictionary* mapCheckBoxHandlers;
-    //@property (strong, nonatomic) NSMutableDictionary* mapPushButtonHandlers;
-    //@property (strong, nonatomic) NSMutableDictionary* mapSliderHandlers;
-    //@property (strong, nonatomic) NSMutableDictionary* mapTabViewHandlers;
+    var mapCheckBoxHandlers: Dictionary<Int, CheckBoxHandler>
+    var mapPushButtonHandlers: Dictionary<Int, PushButtonHandler>
+    var mapSliderHandlers: Dictionary<Int, SliderHandler>
+    var mapTabViewHandlers: Dictionary<Int, TabViewHandler>
+    var _translateYValues = true
 
     
     init(window: NSWindow, windowId: Int) {
@@ -33,8 +34,20 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
         self.windowId = windowId
         self.mapControlIdToControl = Dictionary<Int, NSView>()
         self.mapGroupControls = Dictionary<String, [NSView]>()
+        self.mapCheckBoxHandlers = Dictionary<Int, CheckBoxHandler>()
+        self.mapPushButtonHandlers = Dictionary<Int, PushButtonHandler>()
+        self.mapSliderHandlers = Dictionary<Int, SliderHandler>()
+        self.mapTabViewHandlers = Dictionary<Int, TabViewHandler>()
     }
     
+    func setTranslateYValues(translateYValues: Bool) {
+        self._translateYValues = translateYValues
+    }
+    
+    func translateYValues() -> Bool {
+        return self._translateYValues
+    }
+
     func controlsForGroup(groupName: String) -> [NSView]? {
         return self.mapGroupControls[groupName]
     }
@@ -75,15 +88,13 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
         }
     
         if !ci.isEnabled || ci.isSelected {
-            if view.isKindOfClass(NSControl) {
-                if let control = view as? NSControl {
-                    if !ci.isEnabled {
-                        control.enabled = false
-                    }
+            if let control = view as? NSControl {
+                if !ci.isEnabled {
+                    control.enabled = false
+                }
                     
-                    if ci.isSelected {
-                        //TODO:
-                    }
+                if ci.isSelected {
+                    //TODO:
                 }
             }
         }
@@ -105,6 +116,16 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
                 self.mapGroupControls[groupName] = listControls
             }
         }
+    }
+    
+    func numberOfRowsInTableView(aTableView: NSTableView) -> Int {
+        return 3
+    }
+    
+    func tableView(aTableView: NSTableView!,
+        objectValueForTableColumn aTableColumn: NSTableColumn!,
+        row rowIndex: Int) -> AnyObject! {
+        return "Paul"
     }
 
     func isControlInfoValid(ci: ControlInfo) -> Bool {
@@ -140,8 +161,13 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
     
     func setWindowVisible(isVisible: Bool) -> Bool {
         if let theWindow = self.window {
-            //TODO:
-            //return true
+            if isVisible {
+                theWindow.makeKeyAndOrderFront(self)
+            } else {
+                theWindow.orderOut(self)
+            }
+            
+            return true
         }
         
         return false
@@ -168,11 +194,44 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
         return false
     }
     
+    func checkBoxToggled(sender: NSButton!) {
+        println("check box toggled")
+    }
+    
+    func translateRectYValues(rect: NSRect) -> NSRect {
+        let windowRect = self.windowView!.frame
+        var translatedRect = NSMakeRect(0, 0, 0, 0)
+        translatedRect.origin.x = rect.origin.x
+        translatedRect.origin.y = windowRect.size.height - rect.origin.y - rect.size.height
+        translatedRect.size.width = rect.size.width
+        translatedRect.size.height = rect.size.height
+            
+        return translatedRect
+    }
+    
+    func translateYValues(ci: ControlInfo) -> NSRect {
+        // do we have a parent?
+        if ci.haveParent() {
+            //TODO: implement translation for control with a parent
+            return ci.rect;
+        } else {
+            return self.translateRectYValues(ci.rect)
+        }
+    }
+    
+    func rectForCi(ci: ControlInfo) -> NSRect {
+        if self.translateYValues() {
+            return self.translateYValues(ci)
+        } else {
+            return ci.rect
+        }
+    }
+    
     func createCheckBox(ci: ControlInfo) -> Bool {
         var controlCreated = false
         
         if self.isControlInfoValid(ci) {
-            var checkBox = NSButton(frame:ci.rect)
+            var checkBox = NSButton(frame:self.rectForCi(ci))
             if ci.haveText() {
                 checkBox.title = ci.text
             }
@@ -183,9 +242,13 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
                 checkBox.state = NSOnState
             }
             
-            ci.controlType = CocoaDisplayEngine.ControlType.CheckBox;
+            //checkBox.target = self
+            //checkBox.action = "checkBoxToggled:"
+            
             //[checkBox setTarget:self];
             //[checkBox setAction:@selector(myAction:)];
+            
+            ci.controlType = CocoaDisplayEngine.ControlType.CheckBox;
             self.populateControl(checkBox, ci:ci)
             self.registerControl(checkBox, ci:ci)
             controlCreated = true
@@ -198,13 +261,15 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
         var controlCreated = false
         
         if self.isControlInfoValid(ci) {
-            var comboBox = NSComboBox(frame:ci.rect)
+            var comboBox = NSComboBox(frame:self.rectForCi(ci))
+
+            if ci.haveValues() {
+                var listValues = self.valuesFromCi(ci)
+                comboBox.addItemsWithObjectValues(listValues)
+                comboBox.selectItemAtIndex(0)
+            }
             
-            //TODO:
-            //NSArray* listValues = [self valuesFromCi:ci];
-            //if ([listValues count] > 0) {
-            //    [comboBox addItemsWithObjectValues:listValues];
-            //}
+            comboBox.editable = false
             
             ci.controlType = CocoaDisplayEngine.ControlType.ComboBox
             self.populateControl(comboBox, ci:ci)
@@ -219,7 +284,7 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
         var controlCreated = false
         
         if self.isControlInfoValid(ci) {
-            var textField = NSTextField(frame:ci.rect)
+            var textField = NSTextField(frame:self.rectForCi(ci))
             
             if ci.haveText() {
                 textField.stringValue = ci.text!
@@ -238,7 +303,7 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
         var controlCreated = false
         
         if self.isControlInfoValid(ci) {
-            var box = NSBox(frame:ci.rect)
+            var box = NSBox(frame:self.rectForCi(ci))
             box.borderType = NSBorderType.BezelBorder // GrooveBorder, LineBorder
             
             if ci.haveText() {
@@ -258,7 +323,7 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
         var controlCreated = false
         
         if self.isControlInfoValid(ci) {
-            //var webView = WebView(frame:ci.rect)
+            //var webView = WebView(frame:self.rectForCi(ci))
             
             //TODO: load URL or text if present
             
@@ -275,7 +340,7 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
         var controlCreated = false
         
         if self.isControlInfoValid(ci) {
-            var imageView = NSImageView(frame:ci.rect)
+            var imageView = NSImageView(frame:self.rectForCi(ci))
             
             if ci.haveValues() {
                 //TODO:
@@ -296,7 +361,7 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
         var controlCreated = false
         
         if self.isControlInfoValid(ci) {
-            var tableView = NSTableView(frame:ci.rect)
+            var tableView = NSTableView(frame:self.rectForCi(ci))
 
             var tableColumn = NSTableColumn(identifier:"listColumn")
             tableView.addTableColumn(tableColumn)
@@ -321,24 +386,39 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
         var controlCreated = false
         
         if self.isControlInfoValid(ci) {
-            var tableView = NSTableView(frame:ci.rect)
+            let viewRect = self.rectForCi(ci)
+            var scrollView = NSScrollView(frame: viewRect)
+            var tableView = NSTableView(frame: viewRect)
+            
+            scrollView.hasVerticalScroller = true
+            scrollView.hasHorizontalScroller = true
+            scrollView.documentView = tableView
+            scrollView.autoresizesSubviews = true
+
+            tableView.usesAlternatingRowBackgroundColors = true
+            tableView.columnAutoresizingStyle =
+                NSTableViewColumnAutoresizingStyle.UniformColumnAutoresizingStyle
+            tableView.rowHeight = 17.0
+            tableView.autoresizesSubviews = true
+
             
             if ci.haveValues() {
                 var listValues = self.valuesFromCi(ci)!
-                for value in listValues {
-                    var tableColumn =
-                        NSTableColumn(identifier:value)
+                let tableHeaderViewRect = NSMakeRect(0.0, 0.0, NSWidth(ci.rect), 22.0)
+                var tableHeaderView = NSTableHeaderView(frame:tableHeaderViewRect)
+                tableHeaderView.autoresizesSubviews = true
+                tableView.headerView = tableHeaderView
+                tableView.addSubview(tableHeaderView)
+                
+                for colText in listValues {
+                    var tableColumn = NSTableColumn(identifier:colText)
                     //var headerCell = tableColumn.headerCell!
-                    //headerCell.setStringValue(value)
-                    //tableColumn.headerCell!.setStringValue(value)
-                    
-                    //[[myTableColumn headerCell] setStringValue:myNewTitle] ;
-                    //[[myTableView headerView] setNeedsDisplay:YES];
-                    
-                    //tableColumn.title = value
-                    
+                    //headerCell.setStringValue(colText, resolvingEntities: false)
                     tableView.addTableColumn(tableColumn)
                 }
+
+                //tableView.setDataSource(self)
+                tableView.setNeedsDisplay()
             }
             
             ci.controlType = CocoaDisplayEngine.ControlType.ListView
@@ -354,7 +434,7 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
         var controlCreated = false
         
         if self.isControlInfoValid(ci) {
-            var view = NSView(frame:ci.rect)
+            var view = NSView(frame:self.rectForCi(ci))
             
             ci.controlType = CocoaDisplayEngine.ControlType.Panel
             self.populateControl(view, ci:ci)
@@ -370,7 +450,7 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
         
         if self.isControlInfoValid(ci) {
             var secureTextField =
-                NSSecureTextField(frame:ci.rect)
+                NSSecureTextField(frame:self.rectForCi(ci))
             
             ci.controlType = CocoaDisplayEngine.ControlType.PasswordField
             self.populateControl(secureTextField, ci:ci)
@@ -386,7 +466,7 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
         
         if self.isControlInfoValid(ci) {
             var progressIndicator =
-                NSProgressIndicator(frame:ci.rect)
+                NSProgressIndicator(frame:self.rectForCi(ci))
             
             progressIndicator.style = NSProgressIndicatorStyle.BarStyle
             progressIndicator.indeterminate = false
@@ -402,19 +482,28 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
         return controlCreated
     }
     
+    func buttonClicked(obj:NSButton) {
+        println("button clicked")
+    }
+    
     func createPushButton(ci: ControlInfo) -> Bool {
         var controlCreated = false
         
         if self.isControlInfoValid(ci) {
-            var pushButton = NSButton(frame:ci.rect)
+            var pushButton = NSButton(frame:self.rectForCi(ci))
             if ci.haveText() {
                 pushButton.title = ci.text!
             }
             
-            ci.controlType = CocoaDisplayEngine.ControlType.PushButton
             pushButton.bezelStyle = NSBezelStyle.RoundRectBezelStyle
+            
+            //pushButton.target = self
+            //pushButton.action = "buttonClicked:"
+            
             //[pushButton setTarget:self];
             //[pushButton setAction:@selector(myAction:)];
+            
+            ci.controlType = CocoaDisplayEngine.ControlType.PushButton
             self.populateControl(pushButton, ci:ci)
             self.registerControl(pushButton, ci:ci)
             controlCreated = true
@@ -427,9 +516,10 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
         var controlCreated = false
         
         if self.isControlInfoValid(ci) {
-            var slider = NSSlider(frame:ci.rect)
+            var slider = NSSlider(frame:self.rectForCi(ci))
             slider.minValue = 0.0
             slider.maxValue = 100.0
+            
             ci.controlType = CocoaDisplayEngine.ControlType.Slider
             self.populateControl(slider, ci:ci)
             self.registerControl(slider, ci:ci)
@@ -443,17 +533,18 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
         var controlCreated = false
         
         if self.isControlInfoValid(ci) {
-            var textField = NSTextField(frame:ci.rect)
+            var textField = NSTextField(frame:self.rectForCi(ci))
             
             if ci.haveText() {
                 textField.stringValue = ci.text!
             }
             
-            ci.controlType = CocoaDisplayEngine.ControlType.StaticText
             textField.bezeled = false
             textField.drawsBackground = false
             textField.editable = false
             textField.selectable = false
+            
+            ci.controlType = CocoaDisplayEngine.ControlType.StaticText
             self.populateControl(textField, ci:ci)
             self.registerControl(textField, ci:ci)
             controlCreated = true
@@ -466,7 +557,7 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
         var controlCreated = false
         
         if self.isControlInfoValid(ci) {
-            var tabView = NSTabView(frame:ci.rect)
+            var tabView = NSTabView(frame:self.rectForCi(ci))
             
             if ci.haveValues() {
                 var listValues = self.valuesFromCi(ci)!
@@ -490,7 +581,7 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
         var controlCreated = false
         
         if self.isControlInfoValid(ci) {
-            var textView = NSTextView(frame:ci.rect)
+            var textView = NSTextView(frame:self.rectForCi(ci))
             
             if ci.haveText() {
                 textView.string = ci.text!
@@ -509,7 +600,7 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
         var controlCreated = false
         
         if self.isControlInfoValid(ci) {
-            var outlineView = NSOutlineView(frame:ci.rect)
+            var outlineView = NSOutlineView(frame:self.rectForCi(ci))
             
             ci.controlType = CocoaDisplayEngine.ControlType.Tree
             self.populateControl(outlineView, ci:ci)
@@ -561,14 +652,21 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
         return false
     }
     
-    func enableControl(cid: ControlId) -> Bool {
-        return false
+    func setFocus(cid: ControlId) -> Bool {
+        if let view = self.controlFromCid(cid) {
+            self.window.makeFirstResponder(view)
+            return true
+        }
         
+        return false
+    }
+    
+    func enableControl(cid: ControlId) -> Bool {
+        return setEnabled(true, cid:cid)
     }
     
     func disableControl(cid: ControlId) -> Bool {
-        return false
-        
+        return setEnabled(false, cid:cid)
     }
     
     func enableGroup(groupName: String) -> Bool {
@@ -580,30 +678,100 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
     }
     
     func setEnabled(isEnabled: Bool, cid: ControlId) -> Bool {
+        if let view = self.controlFromCid(cid) {
+            if let control = view as? NSControl {
+                control.enabled = isEnabled
+            }
+            
+            return true
+        }
+
         return false
-        
     }
     
     func setEnabled(isEnabled: Bool, groupName: String) -> Bool {
         var optGroupControls = self.controlsForGroup(groupName)
         if optGroupControls {
             for view in optGroupControls! {
+                if let control = view as? NSControl {
+                    control.enabled = isEnabled
+                }
             }
+            
+            return true
         }
+        
         return false
     }
     
     func setSize(controlSize: NSSize, cid: ControlId) -> Bool {
+        if let view = self.controlFromCid(cid) {
+            var frame = view.frame
+            frame.size = controlSize
+            view.frame = frame
+            return true
+        }
+
         return false
-        
     }
     
     func setPos(point: NSPoint, cid: ControlId) -> Bool {
-        return false
+        if let view = self.controlFromCid(cid) {
+            var frame = view.frame
+            frame.origin = point
+            view.frame = frame
+            return true
+        }
         
+        return false
     }
     
     func setRect(rect: NSRect, cid: ControlId) -> Bool {
+        if let view = self.controlFromCid(cid) {
+            view.frame = rect
+            return true
+        }
+        
+        return false
+    }
+
+    func setCheckBoxHandler(handler: CheckBoxHandler, cid: ControlId) -> Bool {
+        let controlId = cid.controlId
+        if controlId > -1 {
+            self.mapCheckBoxHandlers[controlId] = handler
+            return true
+        }
+        
+        return false
+    }
+
+    func setPushButtonHandler(handler: PushButtonHandler, cid: ControlId) -> Bool {
+        let controlId = cid.controlId
+        if controlId > -1 {
+            self.mapPushButtonHandlers[controlId] = handler
+            return true
+        }
+        
+        return false
+    }
+
+    func setTabViewHandler(handler: TabViewHandler, cid: ControlId) -> Bool {
+        let controlId = cid.controlId
+        if controlId > -1 {
+            self.mapTabViewHandlers[controlId] = handler
+            return true
+        }
+        
+        return false
+    }
+    
+    func setSliderHandler(handler: SliderHandler, cid: ControlId) -> Bool {
+        let controlId = cid.controlId
+        if controlId > -1 {
+            self.mapSliderHandlers[controlId] = handler
+            return true
+        }
+        
         return false
     }
 

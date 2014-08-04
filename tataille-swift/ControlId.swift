@@ -29,4 +29,8 @@ public class ControlId {
     func isValid() -> Bool {
         return (windowId > -1) && (controlId > -1)
     }
+    
+    func haveParent() -> Bool {
+        return self.parentId > -1
+    }
 }

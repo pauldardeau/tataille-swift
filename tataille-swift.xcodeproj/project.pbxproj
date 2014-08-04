@@ -18,6 +18,10 @@
 		DA5735A9198C0F6800BFDD9C /* CocoaDisplayEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA5735A8198C0F6800BFDD9C /* CocoaDisplayEngine.swift */; };
 		DA5735AB198C0F7500BFDD9C /* CocoaDisplayEngineWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA5735AA198C0F7500BFDD9C /* CocoaDisplayEngineWindow.swift */; };
 		DA5735AD198C0F8700BFDD9C /* DisplayEngineWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA5735AC198C0F8700BFDD9C /* DisplayEngineWindow.swift */; };
+		DA5735AF198ED34200BFDD9C /* CheckBoxHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA5735AE198ED34200BFDD9C /* CheckBoxHandler.swift */; };
+		DA5735B1198ED37800BFDD9C /* PushButtonHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA5735B0198ED37800BFDD9C /* PushButtonHandler.swift */; };
+		DA5735B3198EF43000BFDD9C /* TabViewHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA5735B2198EF43000BFDD9C /* TabViewHandler.swift */; };
+		DA5735B5198EF53F00BFDD9C /* SliderHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA5735B4198EF53F00BFDD9C /* SliderHandler.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -46,6 +50,10 @@
 		DA5735A8198C0F6800BFDD9C /* CocoaDisplayEngine.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CocoaDisplayEngine.swift; sourceTree = "<group>"; };
 		DA5735AA198C0F7500BFDD9C /* CocoaDisplayEngineWindow.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CocoaDisplayEngineWindow.swift; sourceTree = "<group>"; };
 		DA5735AC198C0F8700BFDD9C /* DisplayEngineWindow.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DisplayEngineWindow.swift; sourceTree = "<group>"; };
+		DA5735AE198ED34200BFDD9C /* CheckBoxHandler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CheckBoxHandler.swift; sourceTree = "<group>"; };
+		DA5735B0198ED37800BFDD9C /* PushButtonHandler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PushButtonHandler.swift; sourceTree = "<group>"; };
+		DA5735B2198EF43000BFDD9C /* TabViewHandler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TabViewHandler.swift; sourceTree = "<group>"; };
+		DA5735B4198EF53F00BFDD9C /* SliderHandler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SliderHandler.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -97,6 +105,10 @@
 				DA5735AC198C0F8700BFDD9C /* DisplayEngineWindow.swift */,
 				DA5735A8198C0F6800BFDD9C /* CocoaDisplayEngine.swift */,
 				DA5735AA198C0F7500BFDD9C /* CocoaDisplayEngineWindow.swift */,
+				DA5735AE198ED34200BFDD9C /* CheckBoxHandler.swift */,
+				DA5735B0198ED37800BFDD9C /* PushButtonHandler.swift */,
+				DA5735B2198EF43000BFDD9C /* TabViewHandler.swift */,
+				DA5735B4198EF53F00BFDD9C /* SliderHandler.swift */,
 			);
 			path = "tataille-swift";
 			sourceTree = "<group>";
@@ -227,13 +239,17 @@
 			buildActionMask = 2147483647;
 			files = (
 				DA5735AD198C0F8700BFDD9C /* DisplayEngineWindow.swift in Sources */,
+				DA5735AF198ED34200BFDD9C /* CheckBoxHandler.swift in Sources */,
 				DA5735A9198C0F6800BFDD9C /* CocoaDisplayEngine.swift in Sources */,
+				DA5735B5198EF53F00BFDD9C /* SliderHandler.swift in Sources */,
 				DA5735A3198C0F3300BFDD9C /* ControlId.swift in Sources */,
+				DA5735B1198ED37800BFDD9C /* PushButtonHandler.swift in Sources */,
 				DA5735A5198C0F4400BFDD9C /* ControlInfo.swift in Sources */,
 				DA5735AB198C0F7500BFDD9C /* CocoaDisplayEngineWindow.swift in Sources */,
 				DA5735A7198C0F5500BFDD9C /* DisplayEngine.swift in Sources */,
 				DA573588198C0ED500BFDD9C /* AppDelegate.swift in Sources */,
 				DA573586198C0ED500BFDD9C /* main.swift in Sources */,
+				DA5735B3198EF43000BFDD9C /* TabViewHandler.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

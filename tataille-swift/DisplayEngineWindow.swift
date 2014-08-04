@@ -37,6 +37,8 @@ protocol DisplayEngineWindow {
     func createTextView(ci: ControlInfo) -> Bool
     func createTree(ci: ControlInfo) -> Bool
     
+    func setFocus(cid: ControlId) -> Bool
+
     func hideControl(cid: ControlId) -> Bool
     func showControl(cid: ControlId) -> Bool
     
@@ -56,10 +58,10 @@ protocol DisplayEngineWindow {
     func setPos(point: NSPoint, cid: ControlId) -> Bool
     func setRect(rect: NSRect, cid: ControlId) -> Bool
     
-    //func setCheckBoxHandler(handler: CheckBoxHandler, cid: ControlId) -> Bool
+    func setCheckBoxHandler(handler: CheckBoxHandler, cid: ControlId) -> Bool
     //func setListSelectionHandler(handler: ListSelectionHandler, cid: ControlId) -> Bool
-    //func setPushButtonHandler(handler: PushButtonHandler, cid: ControlId) -> Bool
-    //func setSliderHandler(handler: SliderHandler, cid: ControlId) -> Bool
-    //func setTabViewHandler(handler: TabViewHandler, cid: ControlId) -> Bool
+    func setPushButtonHandler(handler: PushButtonHandler, cid: ControlId) -> Bool
+    func setSliderHandler(handler: SliderHandler, cid: ControlId) -> Bool
+    func setTabViewHandler(handler: TabViewHandler, cid: ControlId) -> Bool
 
 }
