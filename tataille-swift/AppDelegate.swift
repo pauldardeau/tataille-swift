@@ -12,6 +12,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                             
     @IBOutlet weak var window: NSWindow!
     
+    let COMBO_HEIGHT: CGFloat = 26.0
     let WINDOW_WIDTH: CGFloat = 600.0
     let WINDOW_HEIGHT: CGFloat = 500.0
     let BUTTON_WIDTH: CGFloat = 120.0
@@ -30,6 +31,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     let LISTVIEW_WIDTH: CGFloat = 325.0
     let LBL_ORDERTOTAL_WIDTH: CGFloat = 65.0
     let VALUES_DELIMITER = ","
+    let PAYMENT_METHOD_VALUES = "Cash,Amex,Discover,MasterCard,Visa"
+    let MENU_ITEM_VALUES = "Cheeseburger,Chips,Drink,French Fries,Grilled Cheese,Hamburger,Hot Dog,Peanuts"
 
     
     var displayEngine: CocoaDisplayEngine!
@@ -37,26 +40,149 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var cidEntryField: ControlId!
     var cidCheckDelivery: ControlId!
     var cidCheckRush: ControlId!
+    var cidComboPayment: ControlId!
     var cidListBox: ControlId!
     var cidListView: ControlId!
     var cidAddButton: ControlId!
     var cidRemoveButton: ControlId!
     var cidOrderButton: ControlId!
     var cidOrderTotal: ControlId!
+    var listPaymentMethods: [String]!
+    var paymentMethod: String!
+    var isDelivery: Bool = false
+    var isRushOrder: Bool = false
 
+    //**************************************************************************
 
     func applicationDidFinishLaunching(aNotification: NSNotification?) {
         // Insert code here to initialize your application
         self.displayEngine = CocoaDisplayEngine(mainWindow:self.window!)
+        self.listPaymentMethods = PAYMENT_METHOD_VALUES.componentsSeparatedByString(",")
         self.startApp();
     }
+
+    //**************************************************************************
 
     func applicationWillTerminate(aNotification: NSNotification?) {
         // Insert code here to tear down your application
     }
+    
+    
+    //**************************************************************************
+    //**************************************************************************
+    
+    class PaymentMethodHandler : ComboBoxHandler {
+        var appDelegate: AppDelegate
+        
+        init(appDelegate: AppDelegate) {
+            self.appDelegate = appDelegate
+        }
+        
+        func combBoxItemSelected(itemIndex: Int) {
+            if let listMethods = self.appDelegate.listPaymentMethods {
+                self.appDelegate.paymentMethod = listMethods[itemIndex]
+            }
+        }
+    }
+
+    //**************************************************************************
+    //**************************************************************************
+    
+    class RushCheckBoxHandler : CheckBoxHandler {
+        var appDelegate: AppDelegate
+        
+        init(appDelegate: AppDelegate) {
+            self.appDelegate = appDelegate
+        }
+        
+        func checkBoxToggled(isChecked: Bool) {
+            self.appDelegate.isRushOrder = isChecked
+        }
+    }
+
+    //**************************************************************************
+    //**************************************************************************
+
+    class DeliveryCheckBoxHandler : CheckBoxHandler {
+        var appDelegate: AppDelegate
+        
+        init(appDelegate: AppDelegate) {
+            self.appDelegate = appDelegate
+        }
+        
+        func checkBoxToggled(isChecked: Bool) {
+            self.appDelegate.isDelivery = isChecked
+        }
+    }
+    
+    //**************************************************************************
+    //**************************************************************************
+    
+    class AddPushButtonHandler : PushButtonHandler {
+        var appDelegate: AppDelegate
+        
+        init(appDelegate: AppDelegate) {
+            self.appDelegate = appDelegate
+        }
+
+        func pushButtonClicked() {
+            self.appDelegate.onAddClicked()
+        }
+    }
+    
+    //**************************************************************************
+    //**************************************************************************
+
+    class RemovePushButtonHandler : PushButtonHandler {
+        var appDelegate: AppDelegate
+        
+        init(appDelegate: AppDelegate) {
+            self.appDelegate = appDelegate
+        }
+        
+        func pushButtonClicked() {
+            self.appDelegate.onRemoveClicked()
+        }
+    }
+    
+    //**************************************************************************
+    //**************************************************************************
+
+    class OrderPushButtonHandler : PushButtonHandler {
+        var appDelegate: AppDelegate
+        
+        init(appDelegate: AppDelegate) {
+            self.appDelegate = appDelegate
+        }
+        
+        func pushButtonClicked() {
+            self.appDelegate.onOrderClicked()
+        }
+    }
+    
+    //**************************************************************************
+    //**************************************************************************
+
+    func onAddClicked() {
+        println("add clicked")
+    }
+
+    //**************************************************************************
+
+    func onRemoveClicked() {
+        println("remove clicked")
+    }
+
+    //**************************************************************************
+
+    func onOrderClicked() {
+        println("order clicked")
+    }
+
+    //**************************************************************************
 
     func startApp() {
-        let TOP: CGFloat = 75
+        let TOP: CGFloat = 25
         let LBL_CUSTOMER_HEIGHT = LABEL_HEIGHT
         let LISTVIEW_HEIGHT = LIST_HEIGHT
         let BTN_ADD_WIDTH = BUTTON_WIDTH
@@ -75,6 +201,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         var x = LEFT_EDGE
         var y = TOP
         var topRowText = y + 4
+        
+        controlId = 1
     
         self.cidCustomerLabel = ControlId(windowId:windowId, controlId:controlId++)
         ci = ControlInfo(cid:self.cidCustomerLabel!)
@@ -88,7 +216,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         self.cidEntryField = ControlId(windowId:windowId, controlId:controlId++)
         ci = ControlInfo(cid:self.cidEntryField)
         ci.rect = NSMakeRect(x, y, EF_CUSTOMER_WIDTH, EF_CUSTOMER_HEIGHT)
-        self.displayEngine.createEntryField(ci)
+        de.createEntryField(ci)
     
         x += EF_CUSTOMER_WIDTH
         x += 20
@@ -98,13 +226,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         ci.rect = NSMakeRect(x, y - 3, CK_DELIVERY_WIDTH, CK_DELIVERY_HEIGHT)
         ci.text = "Delivery"
         ci.helpCaption = "check if this order is for delivery"
-        self.displayEngine.createCheckBox(ci)
-        //    m_de.setCheckBoxHandler(m_cidCheckDelivery, new CheckBoxHandler() {
-        //        @Override
-        //        public void checkBoxToggled(boolean isChecked) {
-        //            System.out.println("delivery: " + (isChecked ? "yes" : "no"));
-        //        }
-        //    });
+        de.createCheckBox(ci)
+        de.setCheckBoxHandler(DeliveryCheckBoxHandler(appDelegate: self), cid: self.cidCheckDelivery)
     
         x += CK_DELIVERY_WIDTH
         x += 20
@@ -114,13 +237,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         ci.rect = NSMakeRect(x, y - 3, CK_RUSH_WIDTH, CK_RUSH_HEIGHT)
         ci.text = "Rush"
         ci.helpCaption = "check if this is a rush order"
-        self.displayEngine.createCheckBox(ci)
-        //    m_de.setCheckBoxHandler(m_cidCheckRush, new CheckBoxHandler() {
-        //        @Override
-        //        public void checkBoxToggled(boolean isChecked) {
-        //            System.out.println("rush order: " + (isChecked ? "yes" : "no"));
-        //        }
-        //    });
+        de.createCheckBox(ci)
+        de.setCheckBoxHandler(RushCheckBoxHandler(appDelegate: self), cid: self.cidCheckRush)
     
         x += CK_RUSH_WIDTH
         x += 15
@@ -130,19 +248,30 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         ci.rect = NSMakeRect(x, topRowText, LBL_ORDERTOTAL_WIDTH, LBL_ORDERTOTAL_HEIGHT)
         ci.text = "0.00"
         ci.helpCaption = "total cost of order"
-        self.displayEngine.createStaticText(ci)
+        de.createStaticText(ci)
     
         x = LEFT_EDGE
         y += EF_CUSTOMER_HEIGHT
         y += 15
+        
+        self.cidComboPayment = ControlId(windowId:windowId, controlId:controlId++)
+        ci = ControlInfo(cid:self.cidComboPayment)
+        ci.rect = NSMakeRect(x, y, 120, COMBO_HEIGHT)
+        ci.values = PAYMENT_METHOD_VALUES
+        ci.helpCaption = "method of payment"
+        de.createComboBox(ci)
+        de.setComboBoxHandler(PaymentMethodHandler(appDelegate: self), cid: self.cidComboPayment)
+        
+        y += COMBO_HEIGHT
+        y += 12
     
         self.cidListBox = ControlId(windowId:windowId, controlId:controlId++)
         ci = ControlInfo(cid:self.cidListBox)
         ci.rect = NSMakeRect(x, y, LIST_WIDTH, LIST_HEIGHT)
-        ci.values = "Cheeseburger,Chips,Drink,French Fries,Grilled Cheese,Hamburger,Hot Dog,Peanuts"
+        ci.values = MENU_ITEM_VALUES
         ci.valuesDelimiter = VALUES_DELIMITER
         ci.helpCaption = "list of items available for order"
-        self.displayEngine.createListBox(ci)
+        de.createListBox(ci)
         //    m_de.setListSelectionHandler(m_cidListBox, new ListSelectionHandler() {
         //        @Override
         //        public void listItemSelected(int selectionIndex, String selectedValue) {
@@ -155,12 +284,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
         self.cidListView = ControlId(windowId:windowId, controlId:controlId++)
         ci = ControlInfo(cid:self.cidListView)
-        ci.rect = NSMakeRect(x, y, LISTVIEW_WIDTH, 26) //LISTVIEW_HEIGHT)
+        ci.rect = NSMakeRect(x, y, LISTVIEW_WIDTH, LISTVIEW_HEIGHT)
         ci.text = "Group"
         ci.values = "Qty,Item,Price"
         ci.valuesDelimiter = VALUES_DELIMITER
         ci.helpCaption = "list of items on order"
-        self.displayEngine.createComboBox(ci)
+        de.createListView(ci)
     
         y += LISTVIEW_HEIGHT
         y += 30
@@ -172,13 +301,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         ci.rect = NSMakeRect(x, y, BTN_ADD_WIDTH, BTN_ADD_HEIGHT)
         ci.text = "Add Item"
         //ci.isEnabled = false;
-        self.displayEngine.createPushButton(ci)
-        //    m_de.setPushButtonHandler(m_cidAddButton, new PushButtonHandler() {
-        //        @Override
-        //        public void pushButtonClicked() {
-        //            System.out.println("add item clicked");
-        //        }
-        //    });
+        de.createPushButton(ci)
+        de.setPushButtonHandler(AddPushButtonHandler(appDelegate: self), cid: self.cidAddButton)
     
         x += LIST_WIDTH
         x += 30
@@ -188,13 +312,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         ci.rect = NSMakeRect(x, y, BTN_REMOVE_WIDTH, BTN_REMOVE_HEIGHT)
         ci.text = "Remove Item"
         //ci.isEnabled = false
-        self.displayEngine.createPushButton(ci)
-        //    m_de.setPushButtonHandler(m_cidRemoveButton, new PushButtonHandler() {
-        //        @Override
-        //        public void pushButtonClicked() {
-        //            System.out.println("remove item clicked");
-        //        }
-        //    });
+        de.createPushButton(ci)
+        de.setPushButtonHandler(RemovePushButtonHandler(appDelegate: self), cid: self.cidRemoveButton)
     
         x += 150
     
@@ -203,15 +322,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         ci.rect = NSMakeRect(x, y, BTN_ORDER_WIDTH, BTN_ORDER_HEIGHT)
         ci.text = "Place Order"
         //ci.isEnabled = false
-        self.displayEngine.createPushButton(ci)
-        //    m_de.setPushButtonHandler(m_cidOrderButton, new PushButtonHandler() {
-        //        @Override
-        //        public void pushButtonClicked() {
-        //            System.out.println("place order clicked");
-        //        }
-        //    });
+        de.createPushButton(ci)
+        de.setPushButtonHandler(OrderPushButtonHandler(appDelegate: self), cid: self.cidOrderButton)
     }
 
+    //**************************************************************************
 
 }
 

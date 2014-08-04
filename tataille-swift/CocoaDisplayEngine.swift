@@ -36,20 +36,28 @@ class CocoaDisplayEngine: DisplayEngine {
     var mapIdToWindows = [Int: CocoaDisplayEngineWindow]()
     var _translateYValues = true
 
-    
+    //**************************************************************************
+
     init(mainWindow: NSWindow) {
         var deWindow = CocoaDisplayEngineWindow(window:mainWindow, windowId:0)
         self.mapIdToWindows[0] = deWindow
     }
-    
+
+    //**************************************************************************
+
     func setTranslateYValues(translateYValues: Bool) {
+        //TODO: automatically propagate to all windows?
         self._translateYValues = translateYValues
     }
-    
+
+    //**************************************************************************
+
     func translateYValues() -> Bool {
         return self._translateYValues
     }
-    
+
+    //**************************************************************************
+
     func windowFromId(windowId: Int) -> CocoaDisplayEngineWindow? {
         var window: CocoaDisplayEngineWindow?
     
@@ -59,40 +67,58 @@ class CocoaDisplayEngine: DisplayEngine {
     
         return window
     }
-    
+
+    //**************************************************************************
+
     func windowFromCid(cid: ControlId) -> CocoaDisplayEngineWindow? {
         return self.windowFromId(cid.windowId)
     }
-    
+
+    //**************************************************************************
+
     func windowFromCi(ci: ControlInfo) -> CocoaDisplayEngineWindow? {
         return self.windowFromCid(ci.cid)
     }
-    
+
+    //**************************************************************************
+
     func run() {
     
     }
-    
+
+    //**************************************************************************
+
     func getDisplayEngineName() -> String {
         return "CocoaDisplayEngine"
     }
-    
+
+    //**************************************************************************
+
     func getDisplayEngineTechnology() -> String {
         return "Cocoa/Swift"
     }
-    
+
+    //**************************************************************************
+
     func getDisplayEngineLanguage() -> String {
         return "Swift"
     }
-    
+
+    //**************************************************************************
+
     func getDisplayEngineVersion() -> String {
         return "0.1"
     }
-    
+
+    //**************************************************************************
+
     func createWindow(windowId: Int, rect: NSRect) -> Bool {
         //TODO:
         return false
     }
-    
+
+    //**************************************************************************
+
     func setRect(rect: NSRect, windowId: Int) -> Bool {
         if let window = self.windowFromId(windowId) {
             return window.setWindowRect(rect)
@@ -100,7 +126,9 @@ class CocoaDisplayEngine: DisplayEngine {
             return false
         }
     }
-    
+
+    //**************************************************************************
+
     func setSize(windowSize: NSSize, windowId: Int) -> Bool {
         if let window = self.windowFromId(windowId) {
             return window.setWindowSize(windowSize)
@@ -108,7 +136,9 @@ class CocoaDisplayEngine: DisplayEngine {
             return false
         }
     }
-    
+
+    //**************************************************************************
+
     func setPos(point: NSPoint, windowId: Int) -> Bool {
         if let window = self.windowFromId(windowId) {
             return window.setWindowPos(point)
@@ -116,7 +146,9 @@ class CocoaDisplayEngine: DisplayEngine {
             return false
         }
     }
-    
+
+    //**************************************************************************
+
     func hideWindow(windowId: Int) -> Bool {
         if let window = self.windowFromId(windowId) {
             return window.hideWindow()
@@ -124,7 +156,9 @@ class CocoaDisplayEngine: DisplayEngine {
             return false
         }
     }
-    
+
+    //**************************************************************************
+
     func showWindow(windowId: Int) -> Bool {
         if let window = self.windowFromId(windowId) {
             return window.showWindow()
@@ -132,7 +166,9 @@ class CocoaDisplayEngine: DisplayEngine {
             return false
         }
     }
-    
+
+    //**************************************************************************
+
     func setVisible(isVisible: Bool, windowId: Int) -> Bool {
         if let window = self.windowFromId(windowId) {
             return window.setWindowVisible(isVisible)
@@ -140,7 +176,9 @@ class CocoaDisplayEngine: DisplayEngine {
             return false
         }
     }
-    
+
+    //**************************************************************************
+
     func setTitle(windowTitle: String, windowId: Int) -> Bool {
         if let window = self.windowFromId(windowId) {
             return window.setWindowTitle(windowTitle)
@@ -148,7 +186,9 @@ class CocoaDisplayEngine: DisplayEngine {
             return false
         }
     }
-    
+
+    //**************************************************************************
+
     func closeWindow(windowId: Int) -> Bool {
         if let window = self.windowFromId(windowId) {
             return window.closeWindow()
@@ -156,7 +196,9 @@ class CocoaDisplayEngine: DisplayEngine {
             return false
         }
     }
-    
+
+    //**************************************************************************
+
     func createCheckBox(ci: ControlInfo) -> Bool {
         if let window = self.windowFromCi(ci) {
             return window.createCheckBox(ci)
@@ -164,7 +206,9 @@ class CocoaDisplayEngine: DisplayEngine {
             return false
         }
     }
-    
+
+    //**************************************************************************
+
     func createComboBox(ci: ControlInfo) -> Bool {
         if let window = self.windowFromCi(ci) {
             return window.createComboBox(ci)
@@ -172,7 +216,9 @@ class CocoaDisplayEngine: DisplayEngine {
             return false
         }
     }
-    
+
+    //**************************************************************************
+
     func createEntryField(ci: ControlInfo) -> Bool {
         if let window = self.windowFromCi(ci) {
             return window.createEntryField(ci)
@@ -180,7 +226,9 @@ class CocoaDisplayEngine: DisplayEngine {
             return false
         }
     }
-    
+
+    //**************************************************************************
+
     func createGroupBox(ci: ControlInfo) -> Bool {
         if let window = self.windowFromCi(ci) {
             return window.createGroupBox(ci)
@@ -188,7 +236,9 @@ class CocoaDisplayEngine: DisplayEngine {
             return false
         }
     }
-    
+
+    //**************************************************************************
+
     func createHtmlBrowser(ci: ControlInfo) -> Bool {
         if let window = self.windowFromCi(ci) {
             return window.createHtmlBrowser(ci)
@@ -196,7 +246,9 @@ class CocoaDisplayEngine: DisplayEngine {
             return false
         }
     }
-    
+
+    //**************************************************************************
+
     func createImageView(ci: ControlInfo) -> Bool {
         if let window = self.windowFromCi(ci) {
             return window.createImageView(ci)
@@ -204,7 +256,9 @@ class CocoaDisplayEngine: DisplayEngine {
             return false
         }
     }
-    
+
+    //**************************************************************************
+
     func createListBox(ci: ControlInfo) -> Bool {
         if let window = self.windowFromCi(ci) {
             return window.createListBox(ci)
@@ -212,7 +266,9 @@ class CocoaDisplayEngine: DisplayEngine {
             return false
         }
     }
-    
+
+    //**************************************************************************
+
     func createListView(ci: ControlInfo) -> Bool {
         if let window = self.windowFromCi(ci) {
             return window.createListView(ci)
@@ -220,7 +276,9 @@ class CocoaDisplayEngine: DisplayEngine {
             return false
         }
     }
-    
+
+    //**************************************************************************
+
     func createPanel(ci: ControlInfo) -> Bool {
         if let window = self.windowFromCi(ci) {
             return window.createPanel(ci)
@@ -228,7 +286,9 @@ class CocoaDisplayEngine: DisplayEngine {
             return false
         }
     }
-    
+
+    //**************************************************************************
+
     func createPasswordField(ci: ControlInfo) -> Bool {
         if let window = self.windowFromCi(ci) {
             return window.createPasswordField(ci)
@@ -236,7 +296,9 @@ class CocoaDisplayEngine: DisplayEngine {
             return false
         }
     }
-    
+
+    //**************************************************************************
+
     func createProgressBar(ci: ControlInfo) -> Bool {
         if let window = self.windowFromCi(ci) {
             return window.createProgressBar(ci)
@@ -244,7 +306,9 @@ class CocoaDisplayEngine: DisplayEngine {
             return false
         }
     }
-    
+
+    //**************************************************************************
+
     func createPushButton(ci: ControlInfo) -> Bool {
         if let window = self.windowFromCi(ci) {
             return window.createPushButton(ci)
@@ -252,7 +316,9 @@ class CocoaDisplayEngine: DisplayEngine {
             return false
         }
     }
-    
+
+    //**************************************************************************
+
     func createSlider(ci: ControlInfo) -> Bool {
         if let window = self.windowFromCi(ci) {
             return window.createSlider(ci)
@@ -260,7 +326,9 @@ class CocoaDisplayEngine: DisplayEngine {
             return false
         }
     }
-    
+
+    //**************************************************************************
+
     func createStaticText(ci: ControlInfo) -> Bool {
         if let window = self.windowFromCi(ci) {
             return window.createStaticText(ci)
@@ -268,7 +336,9 @@ class CocoaDisplayEngine: DisplayEngine {
             return false
         }
     }
-    
+
+    //**************************************************************************
+
     func createTabView(ci: ControlInfo) -> Bool {
         if let window = self.windowFromCi(ci) {
             return window.createTabView(ci)
@@ -276,7 +346,9 @@ class CocoaDisplayEngine: DisplayEngine {
             return false
         }
     }
-    
+
+    //**************************************************************************
+
     func createTextView(ci: ControlInfo) -> Bool {
         if let window = self.windowFromCi(ci) {
             return window.createTextView(ci)
@@ -284,7 +356,9 @@ class CocoaDisplayEngine: DisplayEngine {
             return false
         }
     }
-    
+
+    //**************************************************************************
+
     func createTree(ci: ControlInfo) -> Bool {
         if let window = self.windowFromCi(ci) {
             return window.createTree(ci)
@@ -292,15 +366,21 @@ class CocoaDisplayEngine: DisplayEngine {
             return false
         }
     }
-    
+
+    //**************************************************************************
+
     func hideControl(cid: ControlId) -> Bool {
         return self.setVisible(false, cid:cid)
     }
-    
+
+    //**************************************************************************
+
     func showControl(cid: ControlId) -> Bool {
         return self.setVisible(true, cid:cid)
     }
-    
+
+    //**************************************************************************
+
     func hideGroup(groupName: String, windowId: Int) -> Bool {
         if let window = self.windowFromId(windowId) {
             return window.setVisible(false, groupName:groupName)
@@ -308,7 +388,9 @@ class CocoaDisplayEngine: DisplayEngine {
             return false
         }
     }
-    
+
+    //**************************************************************************
+
     func showGroup(groupName: String, windowId: Int) -> Bool {
         if let window = self.windowFromId(windowId) {
             return window.setVisible(true, groupName:groupName)
@@ -316,7 +398,9 @@ class CocoaDisplayEngine: DisplayEngine {
             return false
         }
     }
-    
+
+    //**************************************************************************
+
     func setVisible(isVisible: Bool, cid: ControlId) -> Bool {
         if let window = self.windowFromCid(cid) {
             return window.setVisible(isVisible, cid:cid)
@@ -325,6 +409,8 @@ class CocoaDisplayEngine: DisplayEngine {
         }
     }
     
+    //**************************************************************************
+
     func setVisible(isVisible: Bool, windowId: Int, groupName: String) -> Bool {
         if let window = self.windowFromId(windowId) {
             return window.setVisible(isVisible, groupName:groupName)
@@ -332,7 +418,9 @@ class CocoaDisplayEngine: DisplayEngine {
             return false
         }
     }
-    
+
+    //**************************************************************************
+
     func setFocus(cid: ControlId) -> Bool {
         if let window = self.windowFromCid(cid) {
             return window.setFocus(cid)
@@ -340,15 +428,21 @@ class CocoaDisplayEngine: DisplayEngine {
             return false
         }
     }
-    
+
+    //**************************************************************************
+
     func enableControl(cid: ControlId) -> Bool {
         return self.setEnabled(true, cid:cid)
     }
-    
+
+    //**************************************************************************
+
     func disableControl(cid: ControlId) -> Bool {
         return self.setEnabled(false, cid:cid)
     }
-    
+
+    //**************************************************************************
+
     func enableGroup(groupName: String, windowId: Int) -> Bool {
         if let window = self.windowFromId(windowId) {
             return window.setEnabled(true, groupName:groupName)
@@ -356,7 +450,9 @@ class CocoaDisplayEngine: DisplayEngine {
             return false
         }
     }
-    
+
+    //**************************************************************************
+
     func disableGroup(groupName: String, windowId: Int) -> Bool {
         if let window = self.windowFromId(windowId) {
             return window.setEnabled(false, groupName:groupName)
@@ -364,7 +460,9 @@ class CocoaDisplayEngine: DisplayEngine {
             return false
         }
     }
-    
+
+    //**************************************************************************
+
     func setEnabled(isEnabled: Bool, cid:ControlId) -> Bool {
         if let window = self.windowFromCid(cid) {
             return window.setEnabled(isEnabled, cid:cid)
@@ -372,7 +470,9 @@ class CocoaDisplayEngine: DisplayEngine {
             return false
         }
     }
-    
+
+    //**************************************************************************
+
     func setEnabled(isEnabled: Bool, windowId: Int, groupName: String) -> Bool {
         if let window = self.windowFromId(windowId) {
             return window.setEnabled(isEnabled, groupName:groupName)
@@ -380,7 +480,9 @@ class CocoaDisplayEngine: DisplayEngine {
             return false
         }
     }
-    
+
+    //**************************************************************************
+
     func setSize(controlSize: NSSize, cid: ControlId) -> Bool {
         if let window = self.windowFromCid(cid) {
             return window.setSize(controlSize, cid:cid)
@@ -388,7 +490,9 @@ class CocoaDisplayEngine: DisplayEngine {
             return false
         }
     }
-    
+
+    //**************************************************************************
+
     func setPos(point: NSPoint, cid: ControlId) -> Bool {
         if let window = self.windowFromCid(cid) {
             return window.setPos(point, cid:cid)
@@ -396,7 +500,9 @@ class CocoaDisplayEngine: DisplayEngine {
             return false
         }
     }
-    
+
+    //**************************************************************************
+
     func setRect(rect: NSRect, cid: ControlId) -> Bool {
         if let window = self.windowFromCid(cid) {
             return window.setRect(rect, cid:cid)
@@ -404,7 +510,9 @@ class CocoaDisplayEngine: DisplayEngine {
             return false
         }
     }
-    
+
+    //**************************************************************************
+
     func setCheckBoxHandler(handler: CheckBoxHandler, cid: ControlId) -> Bool {
         if let window = self.windowFromCid(cid) {
             return window.setCheckBoxHandler(handler, cid:cid)
@@ -412,7 +520,29 @@ class CocoaDisplayEngine: DisplayEngine {
             return false
         }
     }
-    
+
+    //**************************************************************************
+
+    func setComboBoxHandler(handler: ComboBoxHandler, cid: ControlId) -> Bool {
+        if let window = self.windowFromCid(cid) {
+            return window.setComboBoxHandler(handler, cid:cid)
+        } else {
+            return false
+        }
+    }
+
+    //**************************************************************************
+
+    func setListBoxHandler(handler: ListBoxHandler, cid: ControlId) -> Bool {
+        if let window = self.windowFromCid(cid) {
+            return window.setListBoxHandler(handler, cid:cid)
+        } else {
+            return false
+        }
+    }
+
+    //**************************************************************************
+
 //    func setListSelectionHandler(handler: ListSelectionHandler, cid: ControlId) -> Bool {
 //        if let window = self.windowFromCid(cid) {
 //            return window.setListSelectionHandler(handler, cid:cid)
@@ -420,7 +550,9 @@ class CocoaDisplayEngine: DisplayEngine {
 //            return false
 //        }
 //    }
-    
+
+    //**************************************************************************
+
     func setPushButtonHandler(handler: PushButtonHandler, cid: ControlId) -> Bool {
         if let window = self.windowFromCid(cid) {
             return window.setPushButtonHandler(handler, cid:cid)
@@ -428,7 +560,9 @@ class CocoaDisplayEngine: DisplayEngine {
             return false
         }
     }
-    
+
+    //**************************************************************************
+
     func setSliderHandler(handler: SliderHandler, cid: ControlId) -> Bool {
         if let window = self.windowFromCid(cid) {
             return window.setSliderHandler(handler, cid:cid)
@@ -436,7 +570,9 @@ class CocoaDisplayEngine: DisplayEngine {
             return false
         }
     }
-    
+
+    //**************************************************************************
+
     func setTabViewHandler(handler: TabViewHandler, cid: ControlId) -> Bool {
         if let window = self.windowFromCid(cid) {
             return window.setTabViewHandler(handler, cid:cid)
@@ -444,5 +580,7 @@ class CocoaDisplayEngine: DisplayEngine {
             return false
         }
     }
+
+    //**************************************************************************
 
 }

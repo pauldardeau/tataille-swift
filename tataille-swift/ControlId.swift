@@ -14,23 +14,34 @@ public class ControlId {
     public var controlId = -1
     public var parentId = -1
     
+    //**************************************************************************
+
     public init(windowId: Int, controlId: Int) {
         self.windowId = windowId
         self.controlId = controlId
         self.parentId = -1
     }
-    
+
+    //**************************************************************************
+
     public init(windowId: Int, controlId: Int, parentId: Int) {
         self.windowId = windowId
         self.controlId = controlId
         self.parentId = parentId
     }
-    
+
+    //**************************************************************************
+
     func isValid() -> Bool {
         return (windowId > -1) && (controlId > -1)
     }
-    
+
+    //**************************************************************************
+
     func haveParent() -> Bool {
         return self.parentId > -1
     }
+    
+    //**************************************************************************
+
 }

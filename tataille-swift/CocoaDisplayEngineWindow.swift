@@ -10,19 +10,29 @@ import Foundation
 import Cocoa
 
 
-class CocoaDisplayEngineWindow: DisplayEngineWindow {
+class CocoaDisplayEngineWindow: NSObject,
+                                DisplayEngineWindow,
+                                NSComboBoxDelegate,
+                                NSTableViewDataSource,
+                                NSTableViewDelegate {
     
     var window: NSWindow!
     var windowView: NSView!
     var windowId: Int
     var mapControlIdToControl: Dictionary<Int, NSView>
+    var mapControlToControlId: Dictionary<Int, Int> // <Hash(NSView), Int>
     var mapGroupControls: Dictionary<String, [NSView]>
+    var mapListBoxDataSources: Dictionary<Int, [String]>  // <Hash(NSView), [String]>
+    var mapListViewDataSources: Dictionary<Int, [[String]]> // <Hash(NSView), [[String]]>
     var mapCheckBoxHandlers: Dictionary<Int, CheckBoxHandler>
+    var mapComboBoxHandlers: Dictionary<Int, ComboBoxHandler>
+    var mapListBoxHandlers: Dictionary<Int, ListBoxHandler>
     var mapPushButtonHandlers: Dictionary<Int, PushButtonHandler>
     var mapSliderHandlers: Dictionary<Int, SliderHandler>
     var mapTabViewHandlers: Dictionary<Int, TabViewHandler>
     var _translateYValues = true
 
+    //**************************************************************************
     
     init(window: NSWindow, windowId: Int) {
         self.window = window
@@ -33,25 +43,84 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
         
         self.windowId = windowId
         self.mapControlIdToControl = Dictionary<Int, NSView>()
+        self.mapControlToControlId = Dictionary<Int, Int>()
         self.mapGroupControls = Dictionary<String, [NSView]>()
+        self.mapListBoxDataSources = Dictionary<Int, [String]>()
+        self.mapListViewDataSources = Dictionary<Int, [[String]]>()
         self.mapCheckBoxHandlers = Dictionary<Int, CheckBoxHandler>()
+        self.mapComboBoxHandlers = Dictionary<Int, ComboBoxHandler>()
+        self.mapListBoxHandlers = Dictionary<Int, ListBoxHandler>()
         self.mapPushButtonHandlers = Dictionary<Int, PushButtonHandler>()
         self.mapSliderHandlers = Dictionary<Int, SliderHandler>()
         self.mapTabViewHandlers = Dictionary<Int, TabViewHandler>()
     }
+
+    //**************************************************************************
+
+    func comboBoxSelectionDidChange(notification: NSNotification!) {
+        println("combo box selection did change")
+        
+        if let aNotification = notification {
+            if let obj: AnyObject = aNotification.object {
+                if let comboBox = obj as? NSComboBox {
+                    if let controlId = self.mapControlToControlId[comboBox.hashValue] {
+                        if let handler = self.mapComboBoxHandlers[controlId] {
+                            handler.combBoxItemSelected(comboBox.indexOfSelectedItem)
+                        } else {
+                            println("no handler registered for combobox")
+                        }
+                    } else {
+                        println("unable to find control id for combo box")
+                    }
+                } else {
+                    println("warning: control is not a NSComboBox")
+                }
+            } else {
+                println("no object available in notification")
+            }
+        } else {
+            println("no notification object available")
+        }
+    }
     
+    //**************************************************************************
+
+    func comboBoxSelectionIsChanging(notification: NSNotification!) {
+        //println("combo box selection is changing")
+    }
+
+    //**************************************************************************
+
+    func comboBoxWillDismiss(notification: NSNotification!)  {
+        //println("combo box will dismiss")
+    }
+
+    //**************************************************************************
+
+    func comboBoxWillPopUp(notification: NSNotification!) {
+        //println("combo box will popup")
+    }
+
+    //**************************************************************************
+
     func setTranslateYValues(translateYValues: Bool) {
         self._translateYValues = translateYValues
     }
     
+    //**************************************************************************
+
     func translateYValues() -> Bool {
         return self._translateYValues
     }
 
+    //**************************************************************************
+
     func controlsForGroup(groupName: String) -> [NSView]? {
         return self.mapGroupControls[groupName]
     }
-    
+
+    //**************************************************************************
+
     func controlFromControlId(controlId: Int) -> NSView? {
         var control: NSView?
     
@@ -61,11 +130,15 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
     
         return control
     }
-    
+
+    //**************************************************************************
+
     func controlFromCid(cid: ControlId) -> NSView? {
         return self.controlFromControlId(cid.controlId)
     }
-    
+
+    //**************************************************************************
+
     func valuesFromCi(ci: ControlInfo) -> [String]? {
         var listValues: [String]?
     
@@ -73,9 +146,11 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
             listValues = ci.getValues(",")
         }
     
-        return listValues;
+        return listValues
     }
-    
+
+    //**************************************************************************
+
     func populateControl(view: NSView, ci:ControlInfo) {
         //view.tag = ci.cid.controlId;
     
@@ -92,7 +167,9 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
                 if !ci.isEnabled {
                     control.enabled = false
                 }
-                    
+                
+                //TODO: if isSelected only applies to checkbox, take it out
+                //      of ControlInfo
                 if ci.isSelected {
                     //TODO:
                 }
@@ -101,9 +178,12 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
     
         self.windowView!.addSubview(view)
     }
-    
+
+    //**************************************************************************
+
     func registerControl(control: NSView, ci:ControlInfo) {
         self.mapControlIdToControl[ci.cid.controlId] = control
+        self.mapControlToControlId[control.hashValue] = ci.cid.controlId
         
         if let groupName = ci.groupName {
             var optListControls = self.mapGroupControls[groupName]
@@ -117,21 +197,76 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
             }
         }
     }
-    
-    func numberOfRowsInTableView(aTableView: NSTableView) -> Int {
-        return 3
+
+    //**************************************************************************
+
+    func numberOfRowsInTableView(aTableView: NSTableView!) -> Int {
+        if let tv = aTableView {
+            // is it a listbox?
+            let hash = tv.hashValue
+            if let listValues = self.mapListBoxDataSources[hash] {
+                return countElements(listValues)
+            } else {
+                if let listViewValues = self.mapListViewDataSources[hash] {
+                    return 10 //return countElements(listViewValues)
+                } else {
+                    return 3
+                }
+            }
+        } else {
+            return 0
+        }
     }
-    
+
+    //**************************************************************************
+
     func tableView(aTableView: NSTableView!,
-        objectValueForTableColumn aTableColumn: NSTableColumn!,
-        row rowIndex: Int) -> AnyObject! {
-        return "Paul"
+                   objectValueForTableColumn tableColumn: NSTableColumn!,
+                   row: Int) -> AnyObject! {
+                    
+        if let tv = aTableView {
+            // is it a listbox?
+            let hash = tv.hashValue
+            if let listValues = self.mapListBoxDataSources[hash] {
+                return listValues[row]
+            } else {
+                if let listViewValues = self.mapListViewDataSources[hash] {
+                    //TODO: find column position
+                    return "Foo"
+                } else {
+                    return "Foo"
+                }
+            }
+        } else {
+            return ""
+        }
     }
+    
+    //**************************************************************************
+
+    func tableView(aTableView: NSTableView!,
+                   viewForTableColumn tableColumn: NSTableColumn!,
+                   row rowIndex: Int) -> NSView! {
+        var view: NSView!
+        if let tv = aTableView {
+            var v: AnyObject! = tv.makeViewWithIdentifier("List", owner: self)
+            if let tcv = v as? NSTableCellView {
+                tcv.textField.stringValue = "Foo"
+                view = tcv
+            }
+        }
+                    
+        return view
+    }
+
+    //**************************************************************************
 
     func isControlInfoValid(ci: ControlInfo) -> Bool {
         return ci.isValid()
     }
-    
+
+    //**************************************************************************
+
     func setWindowRect(rect: NSRect) -> Bool {
         if let theWindow = self.window {
             theWindow.setFrame(rect, display: true)
@@ -141,24 +276,34 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
         return false
     }
     
+    //**************************************************************************
+
     func setWindowSize(windowSize: NSSize) -> Bool {
         //TODO:
         return false
     }
-    
+
+    //**************************************************************************
+
     func setWindowPos(point: NSPoint) -> Bool {
         //TODO:
         return false
     }
-    
+
+    //**************************************************************************
+
     func hideWindow() -> Bool {
         return self.setWindowVisible(false)
     }
-    
+
+    //**************************************************************************
+
     func showWindow() -> Bool {
         return self.setWindowVisible(true)
     }
     
+    //**************************************************************************
+
     func setWindowVisible(isVisible: Bool) -> Bool {
         if let theWindow = self.window {
             if isVisible {
@@ -172,7 +317,9 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
         
         return false
     }
-    
+
+    //**************************************************************************
+
     func setWindowTitle(windowTitle: String) -> Bool {
         if let theWindow = self.window {
             theWindow.title = windowTitle
@@ -182,6 +329,8 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
         return false
     }
     
+    //**************************************************************************
+
     func closeWindow() -> Bool {
         if self.window {
             var theWindow = self.window!
@@ -193,11 +342,9 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
         
         return false
     }
-    
-    func checkBoxToggled(sender: NSButton!) {
-        println("check box toggled")
-    }
-    
+
+    //**************************************************************************
+
     func translateRectYValues(rect: NSRect) -> NSRect {
         let windowRect = self.windowView!.frame
         var translatedRect = NSMakeRect(0, 0, 0, 0)
@@ -208,7 +355,9 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
             
         return translatedRect
     }
-    
+
+    //**************************************************************************
+
     func translateYValues(ci: ControlInfo) -> NSRect {
         // do we have a parent?
         if ci.haveParent() {
@@ -219,6 +368,8 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
         }
     }
     
+    //**************************************************************************
+
     func rectForCi(ci: ControlInfo) -> NSRect {
         if self.translateYValues() {
             return self.translateYValues(ci)
@@ -226,7 +377,25 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
             return ci.rect
         }
     }
-    
+
+    //**************************************************************************
+
+    func checkBoxToggled(obj:NSButton) {
+        println("check box toggled")
+        
+        if let controlId = self.mapControlToControlId[obj.hashValue] {
+            if let handler = self.mapCheckBoxHandlers[controlId] {
+                handler.checkBoxToggled(true)
+            } else {
+                println("no handler registered for checkbox")
+            }
+        } else {
+            println("unable to find control id for checkbox")
+        }
+    }
+
+    //**************************************************************************
+
     func createCheckBox(ci: ControlInfo) -> Bool {
         var controlCreated = false
         
@@ -242,11 +411,8 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
                 checkBox.state = NSOnState
             }
             
-            //checkBox.target = self
-            //checkBox.action = "checkBoxToggled:"
-            
-            //[checkBox setTarget:self];
-            //[checkBox setAction:@selector(myAction:)];
+            checkBox.target = self
+            checkBox.action = "checkBoxToggled:"
             
             ci.controlType = CocoaDisplayEngine.ControlType.CheckBox;
             self.populateControl(checkBox, ci:ci)
@@ -256,7 +422,14 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
         
         return controlCreated
     }
+
+    //**************************************************************************
+
+    func comboBoxSelectionChange(obj: NSComboBox) {
+    }
     
+    //**************************************************************************
+
     func createComboBox(ci: ControlInfo) -> Bool {
         var controlCreated = false
         
@@ -271,6 +444,8 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
             
             comboBox.editable = false
             
+            comboBox.setDelegate(self)
+            
             ci.controlType = CocoaDisplayEngine.ControlType.ComboBox
             self.populateControl(comboBox, ci:ci)
             self.registerControl(comboBox, ci:ci)
@@ -280,6 +455,8 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
         return controlCreated
     }
     
+    //**************************************************************************
+
     func createEntryField(ci: ControlInfo) -> Bool {
         var controlCreated = false
         
@@ -299,6 +476,8 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
         return controlCreated
     }
     
+    //**************************************************************************
+
     func createGroupBox(ci: ControlInfo) -> Bool {
         var controlCreated = false
         
@@ -319,6 +498,8 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
         return controlCreated
     }
     
+    //**************************************************************************
+
     func createHtmlBrowser(ci: ControlInfo) -> Bool {
         var controlCreated = false
         
@@ -336,6 +517,8 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
         return controlCreated
     }
     
+    //**************************************************************************
+
     func createImageView(ci: ControlInfo) -> Bool {
         var controlCreated = false
         
@@ -357,6 +540,8 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
         return controlCreated
     }
     
+    //**************************************************************************
+
     func createListBox(ci: ControlInfo) -> Bool {
         var controlCreated = false
         
@@ -365,13 +550,17 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
 
             var tableColumn = NSTableColumn(identifier:"listColumn")
             tableView.addTableColumn(tableColumn)
+            
+            let hash = tableView.hashValue
 
             if ci.haveValues() {
                 var listValues = self.valuesFromCi(ci)!
-                for value in listValues {
-                    //TODO: poplate list entry
-                }
+                self.mapListBoxDataSources[hash] = listValues
+            } else {
+                self.mapListBoxDataSources[hash] = [String]()
             }
+            
+            tableView.setDataSource(self)
             
             ci.controlType = CocoaDisplayEngine.ControlType.ListBox
             self.populateControl(tableView, ci:ci)
@@ -382,6 +571,8 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
         return controlCreated
     }
     
+    //**************************************************************************
+
     func createListView(ci: ControlInfo) -> Bool {
         var controlCreated = false
         
@@ -390,34 +581,41 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
             var scrollView = NSScrollView(frame: viewRect)
             var tableView = NSTableView(frame: viewRect)
             
+            let hash = tableView.hashValue
+            
             scrollView.hasVerticalScroller = true
             scrollView.hasHorizontalScroller = true
             scrollView.documentView = tableView
-            scrollView.autoresizesSubviews = true
+            //scrollView.autoresizesSubviews = true
 
             tableView.usesAlternatingRowBackgroundColors = true
             tableView.columnAutoresizingStyle =
                 NSTableViewColumnAutoresizingStyle.UniformColumnAutoresizingStyle
             tableView.rowHeight = 17.0
-            tableView.autoresizesSubviews = true
+            //tableView.autoresizesSubviews = true
+            
+            self.mapListViewDataSources[hash] = [[String]]()
+
 
             
             if ci.haveValues() {
                 var listValues = self.valuesFromCi(ci)!
                 let tableHeaderViewRect = NSMakeRect(0.0, 0.0, NSWidth(ci.rect), 22.0)
                 var tableHeaderView = NSTableHeaderView(frame:tableHeaderViewRect)
-                tableHeaderView.autoresizesSubviews = true
+                //tableHeaderView.autoresizesSubviews = true
                 tableView.headerView = tableHeaderView
                 tableView.addSubview(tableHeaderView)
                 
                 for colText in listValues {
                     var tableColumn = NSTableColumn(identifier:colText)
+                    //NSTableCellView
                     //var headerCell = tableColumn.headerCell!
                     //headerCell.setStringValue(colText, resolvingEntities: false)
                     tableView.addTableColumn(tableColumn)
                 }
 
-                //tableView.setDataSource(self)
+                tableView.setDataSource(self)
+                //tableView.setDelegate(self)
                 tableView.setNeedsDisplay()
             }
             
@@ -430,6 +628,8 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
         return controlCreated
     }
     
+    //**************************************************************************
+
     func createPanel(ci: ControlInfo) -> Bool {
         var controlCreated = false
         
@@ -444,7 +644,9 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
         
         return controlCreated
     }
-    
+
+    //**************************************************************************
+
     func createPasswordField(ci: ControlInfo) -> Bool {
         var controlCreated = false
         
@@ -461,6 +663,8 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
         return controlCreated
     }
     
+    //**************************************************************************
+
     func createProgressBar(ci: ControlInfo) -> Bool {
         var controlCreated = false
         
@@ -481,11 +685,25 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
         
         return controlCreated
     }
-    
-    func buttonClicked(obj:NSButton) {
-        println("button clicked")
+
+    //**************************************************************************
+
+    func pushButtonClicked(obj:NSButton) {
+        println("push button clicked")
+
+        if let controlId = self.mapControlToControlId[obj.hashValue] {
+            if let handler = self.mapPushButtonHandlers[controlId] {
+                handler.pushButtonClicked()
+            } else {
+                println("no handler registered for push button")
+            }
+        } else {
+            println("can't map push button to cid")
+        }
     }
     
+    //**************************************************************************
+
     func createPushButton(ci: ControlInfo) -> Bool {
         var controlCreated = false
         
@@ -497,11 +715,8 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
             
             pushButton.bezelStyle = NSBezelStyle.RoundRectBezelStyle
             
-            //pushButton.target = self
-            //pushButton.action = "buttonClicked:"
-            
-            //[pushButton setTarget:self];
-            //[pushButton setAction:@selector(myAction:)];
+            pushButton.target = self
+            pushButton.action = "pushButtonClicked:"
             
             ci.controlType = CocoaDisplayEngine.ControlType.PushButton
             self.populateControl(pushButton, ci:ci)
@@ -512,6 +727,8 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
         return controlCreated
     }
     
+    //**************************************************************************
+
     func createSlider(ci: ControlInfo) -> Bool {
         var controlCreated = false
         
@@ -528,7 +745,9 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
         
         return controlCreated
     }
-    
+
+    //**************************************************************************
+
     func createStaticText(ci: ControlInfo) -> Bool {
         var controlCreated = false
         
@@ -553,6 +772,8 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
         return controlCreated
     }
     
+    //**************************************************************************
+
     func createTabView(ci: ControlInfo) -> Bool {
         var controlCreated = false
         
@@ -576,7 +797,9 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
         
         return controlCreated
     }
-    
+
+    //**************************************************************************
+
     func createTextView(ci: ControlInfo) -> Bool {
         var controlCreated = false
         
@@ -596,6 +819,8 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
         return controlCreated
     }
     
+    //**************************************************************************
+
     func createTree(ci: ControlInfo) -> Bool {
         var controlCreated = false
         
@@ -610,23 +835,33 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
         
         return controlCreated
     }
-    
+
+    //**************************************************************************
+
     func hideControl(cid: ControlId) -> Bool {
         return self.setVisible(false, cid:cid)
     }
-    
+
+    //**************************************************************************
+
     func showControl(cid: ControlId) -> Bool {
         return self.setVisible(true, cid:cid)
     }
-    
+
+    //**************************************************************************
+
     func hideGroup(groupName: String) -> Bool {
         return setVisible(false, groupName:groupName)
     }
-    
+
+    //**************************************************************************
+
     func showGroup(groupName: String) -> Bool {
         return setVisible(true, groupName:groupName)
     }
     
+    //**************************************************************************
+
     func setVisible(isVisible: Bool, cid: ControlId) -> Bool {
         
         if let view = self.controlFromCid(cid) {
@@ -636,7 +871,9 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
         
         return false
     }
-    
+
+    //**************************************************************************
+
     func setVisible(isVisible: Bool, groupName: String) -> Bool {
         var optGroupControls = self.controlsForGroup(groupName)
         if optGroupControls {
@@ -652,6 +889,8 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
         return false
     }
     
+    //**************************************************************************
+
     func setFocus(cid: ControlId) -> Bool {
         if let view = self.controlFromCid(cid) {
             self.window.makeFirstResponder(view)
@@ -660,23 +899,33 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
         
         return false
     }
-    
+
+    //**************************************************************************
+
     func enableControl(cid: ControlId) -> Bool {
         return setEnabled(true, cid:cid)
     }
-    
+
+    //**************************************************************************
+
     func disableControl(cid: ControlId) -> Bool {
         return setEnabled(false, cid:cid)
     }
-    
+
+    //**************************************************************************
+
     func enableGroup(groupName: String) -> Bool {
         return self.setEnabled(true, groupName:groupName)
     }
-    
+
+    //**************************************************************************
+
     func disableGroup(groupName: String) -> Bool {
         return self.setEnabled(false, groupName:groupName)
     }
     
+    //**************************************************************************
+
     func setEnabled(isEnabled: Bool, cid: ControlId) -> Bool {
         if let view = self.controlFromCid(cid) {
             if let control = view as? NSControl {
@@ -688,7 +937,9 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
 
         return false
     }
-    
+
+    //**************************************************************************
+
     func setEnabled(isEnabled: Bool, groupName: String) -> Bool {
         var optGroupControls = self.controlsForGroup(groupName)
         if optGroupControls {
@@ -703,7 +954,9 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
         
         return false
     }
-    
+
+    //**************************************************************************
+
     func setSize(controlSize: NSSize, cid: ControlId) -> Bool {
         if let view = self.controlFromCid(cid) {
             var frame = view.frame
@@ -714,7 +967,9 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
 
         return false
     }
-    
+
+    //**************************************************************************
+
     func setPos(point: NSPoint, cid: ControlId) -> Bool {
         if let view = self.controlFromCid(cid) {
             var frame = view.frame
@@ -725,7 +980,9 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
         
         return false
     }
-    
+
+    //**************************************************************************
+
     func setRect(rect: NSRect, cid: ControlId) -> Bool {
         if let view = self.controlFromCid(cid) {
             view.frame = rect
@@ -734,6 +991,8 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
         
         return false
     }
+
+    //**************************************************************************
 
     func setCheckBoxHandler(handler: CheckBoxHandler, cid: ControlId) -> Bool {
         let controlId = cid.controlId
@@ -745,6 +1004,32 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
         return false
     }
 
+    //**************************************************************************
+
+    func setComboBoxHandler(handler: ComboBoxHandler, cid: ControlId) -> Bool {
+        let controlId = cid.controlId
+        if controlId > -1 {
+            self.mapComboBoxHandlers[controlId] = handler
+            return true
+        }
+        
+        return false
+    }
+
+    //**************************************************************************
+
+    func setListBoxHandler(handler: ListBoxHandler, cid: ControlId) -> Bool {
+        let controlId = cid.controlId
+        if controlId > -1 {
+            self.mapListBoxHandlers[controlId] = handler
+            return true
+        }
+        
+        return false
+    }
+
+    //**************************************************************************
+
     func setPushButtonHandler(handler: PushButtonHandler, cid: ControlId) -> Bool {
         let controlId = cid.controlId
         if controlId > -1 {
@@ -755,6 +1040,8 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
         return false
     }
 
+    //**************************************************************************
+
     func setTabViewHandler(handler: TabViewHandler, cid: ControlId) -> Bool {
         let controlId = cid.controlId
         if controlId > -1 {
@@ -764,7 +1051,9 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
         
         return false
     }
-    
+
+    //**************************************************************************
+
     func setSliderHandler(handler: SliderHandler, cid: ControlId) -> Bool {
         let controlId = cid.controlId
         if controlId > -1 {
@@ -774,5 +1063,7 @@ class CocoaDisplayEngineWindow: DisplayEngineWindow {
         
         return false
     }
+
+    //**************************************************************************
 
 }

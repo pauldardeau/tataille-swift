@@ -59,6 +59,8 @@ protocol DisplayEngineWindow {
     func setRect(rect: NSRect, cid: ControlId) -> Bool
     
     func setCheckBoxHandler(handler: CheckBoxHandler, cid: ControlId) -> Bool
+    func setComboBoxHandler(handler: ComboBoxHandler, cid: ControlId) -> Bool
+    func setListBoxHandler(handler: ListBoxHandler, cid: ControlId) -> Bool
     //func setListSelectionHandler(handler: ListSelectionHandler, cid: ControlId) -> Bool
     func setPushButtonHandler(handler: PushButtonHandler, cid: ControlId) -> Bool
     func setSliderHandler(handler: SliderHandler, cid: ControlId) -> Bool

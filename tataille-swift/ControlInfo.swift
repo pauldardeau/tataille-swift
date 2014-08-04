@@ -23,21 +23,28 @@ public class ControlInfo {
     public var isVisible = true
     public var isEnabled = true
 
-    
+    //**************************************************************************
+
     public init(cid: ControlId) {
         self.controlType = CocoaDisplayEngine.ControlType.Unknown
         self.cid = cid
         self.rect = CGRectZero
     }
 
+    //**************************************************************************
+
     func isValid() -> Bool {
         return self.cid.isValid()
     }
-    
+
+    //**************************************************************************
+
     func haveParent() -> Bool {
         return self.cid.haveParent()
     }
-    
+
+    //**************************************************************************
+
     func getValues(defaultDelimiter: String) -> [String]? {
         if let unWrappedValues = self.values {
             if let unWrappedDelimiter = self.valuesDelimiter {
@@ -49,7 +56,9 @@ public class ControlInfo {
         
         return nil
     }
-    
+
+    //**************************************************************************
+
     class func haveStringValue(s: String?) -> Bool {
         if let sUnwrapped = s {
             if countElements(sUnwrapped) > 0 {
@@ -59,29 +68,44 @@ public class ControlInfo {
         
         return false
     }
-    
+
+    //**************************************************************************
+
     func haveGroupName() -> Bool {
         return ControlInfo.haveStringValue(self.groupName)
     }
-    
+
+    //**************************************************************************
+
     func haveControlName() -> Bool {
         return ControlInfo.haveStringValue(self.controlName)
     }
-    
+
+    //**************************************************************************
+
     func haveHelpCaption() -> Bool {
         return ControlInfo.haveStringValue(self.helpCaption)
     }
-    
+
+    //**************************************************************************
+
     func haveText() -> Bool {
         return ControlInfo.haveStringValue(self.text)
     }
-    
+
+    //**************************************************************************
+
     func haveValues() -> Bool {
         return ControlInfo.haveStringValue(self.values)
     }
-    
+
+    //**************************************************************************
+
     func haveValuesDelimiter() -> Bool {
         return ControlInfo.haveStringValue(self.valuesDelimiter)
     }
+    
+    //**************************************************************************
+
 }
 

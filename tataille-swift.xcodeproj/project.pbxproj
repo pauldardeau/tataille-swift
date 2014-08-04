@@ -22,6 +22,8 @@
 		DA5735B1198ED37800BFDD9C /* PushButtonHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA5735B0198ED37800BFDD9C /* PushButtonHandler.swift */; };
 		DA5735B3198EF43000BFDD9C /* TabViewHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA5735B2198EF43000BFDD9C /* TabViewHandler.swift */; };
 		DA5735B5198EF53F00BFDD9C /* SliderHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA5735B4198EF53F00BFDD9C /* SliderHandler.swift */; };
+		DA5735B7198FB61500BFDD9C /* ListBoxHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA5735B6198FB61500BFDD9C /* ListBoxHandler.swift */; };
+		DA5735B9198FB75500BFDD9C /* ComboBoxHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA5735B8198FB75500BFDD9C /* ComboBoxHandler.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -54,6 +56,8 @@
 		DA5735B0198ED37800BFDD9C /* PushButtonHandler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PushButtonHandler.swift; sourceTree = "<group>"; };
 		DA5735B2198EF43000BFDD9C /* TabViewHandler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TabViewHandler.swift; sourceTree = "<group>"; };
 		DA5735B4198EF53F00BFDD9C /* SliderHandler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SliderHandler.swift; sourceTree = "<group>"; };
+		DA5735B6198FB61500BFDD9C /* ListBoxHandler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ListBoxHandler.swift; sourceTree = "<group>"; };
+		DA5735B8198FB75500BFDD9C /* ComboBoxHandler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ComboBoxHandler.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -109,6 +113,8 @@
 				DA5735B0198ED37800BFDD9C /* PushButtonHandler.swift */,
 				DA5735B2198EF43000BFDD9C /* TabViewHandler.swift */,
 				DA5735B4198EF53F00BFDD9C /* SliderHandler.swift */,
+				DA5735B6198FB61500BFDD9C /* ListBoxHandler.swift */,
+				DA5735B8198FB75500BFDD9C /* ComboBoxHandler.swift */,
 			);
 			path = "tataille-swift";
 			sourceTree = "<group>";
@@ -248,8 +254,10 @@
 				DA5735AB198C0F7500BFDD9C /* CocoaDisplayEngineWindow.swift in Sources */,
 				DA5735A7198C0F5500BFDD9C /* DisplayEngine.swift in Sources */,
 				DA573588198C0ED500BFDD9C /* AppDelegate.swift in Sources */,
+				DA5735B7198FB61500BFDD9C /* ListBoxHandler.swift in Sources */,
 				DA573586198C0ED500BFDD9C /* main.swift in Sources */,
 				DA5735B3198EF43000BFDD9C /* TabViewHandler.swift in Sources */,
+				DA5735B9198FB75500BFDD9C /* ComboBoxHandler.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
