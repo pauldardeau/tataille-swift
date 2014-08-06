@@ -12,6 +12,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                             
     @IBOutlet weak var window: NSWindow!
     
+    let TOP: CGFloat = 25
     let COMBO_HEIGHT: CGFloat = 26.0
     let WINDOW_WIDTH: CGFloat = 600.0
     let WINDOW_HEIGHT: CGFloat = 500.0
@@ -32,7 +33,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     let LBL_ORDERTOTAL_WIDTH: CGFloat = 65.0
     let VALUES_DELIMITER = ","
     let PAYMENT_METHOD_VALUES = "Cash,Amex,Discover,MasterCard,Visa"
-
     
     var displayEngine: CocoaDisplayEngine!
     var cidCustomerLabel: ControlId!
@@ -55,6 +55,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var selectedMenuItemIndex = -1
     var selectedOrderItemIndex = -1
     var menu = Dictionary<String, Double>()
+    var listOrderItems = Array<OrderItem>()
     var orderTotal = 0.00
 
     //**************************************************************************
@@ -72,7 +73,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     //**************************************************************************
 
     func applicationDidFinishLaunching(aNotification: NSNotification?) {
-        // Insert code here to initialize your application
         self.displayEngine = CocoaDisplayEngine(mainWindow:self.window!)
         
         // set up our menu
@@ -86,7 +86,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         self.addMenuItem("Peanuts", price:2.00)
 
         self.listPaymentMethods = PAYMENT_METHOD_VALUES.componentsSeparatedByString(",")
-        self.startApp();
+        self.startApp(self.displayEngine!);
     }
 
     //**************************************************************************
@@ -221,8 +221,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     //**************************************************************************
 
     func onListMenuSelection(itemIndex: Int) {
-        println("menu item selected: \(itemIndex)")
-
         self.selectedMenuItemIndex = itemIndex
         
         var buttonEnabled = true
@@ -251,20 +249,26 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     //**************************************************************************
 
     func onAddClicked() {
-        println("add clicked")
-        
         if let cidMenu = self.cidListBox {
             if let cidOrderItems = self.cidListView {
                 let selectedMenuItem = self.listMenuItems[self.selectedMenuItemIndex]
-                println("add menu item to order '\(selectedMenuItem)'")
-                let itemPrice = self.menu[selectedMenuItem]!
-                let itemQty = "1"
-                let itemPriceAsString = NSString(format:"%.2f", itemPrice)
-                let itemRow = [itemQty, selectedMenuItem, itemPriceAsString]
-                self.displayEngine!.addRow("\(itemQty),\(selectedMenuItem),\(itemPriceAsString)", cid:self.cidListView)
-                self.orderTotal += itemPrice
+                let orderItem = OrderItem()
+                orderItem.quantity = 1
+                orderItem.itemName = selectedMenuItem
+                orderItem.itemPrice = self.menu[selectedMenuItem]!
+                
+                self.listOrderItems.append(orderItem)
+
+                let itemPriceAsString = NSString(format:"%.2f", orderItem.itemPrice)
+
+                self.displayEngine!.addRow("\(orderItem.quantity),\(selectedMenuItem),\(itemPriceAsString)", cid:self.cidListView)
+                self.orderTotal += orderItem.itemPrice
                 let orderTotalString = NSString(format:"%.2f", self.orderTotal)
                 self.displayEngine!.setStaticText(orderTotalString, cid: self.cidOrderTotal)
+                
+                if self.listOrderItems.count == 1 {
+                    self.displayEngine!.enableControl(self.cidOrderButton)
+                }
             }
         }
     }
@@ -272,7 +276,22 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     //**************************************************************************
 
     func onRemoveClicked() {
-        println("remove clicked")
+        if self.selectedOrderItemIndex > -1 {
+            let item = self.listOrderItems[self.selectedOrderItemIndex]
+            self.orderTotal -= item.itemPrice
+            let orderTotalString = NSString(format:"%.2f", self.orderTotal)
+            self.displayEngine!.setStaticText(orderTotalString, cid: self.cidOrderTotal)
+
+            self.listOrderItems.removeAtIndex(self.selectedOrderItemIndex)
+            self.displayEngine!.removeRow(self.selectedOrderItemIndex, cid: self.cidListView)
+            
+            self.selectedOrderItemIndex = -1
+            self.displayEngine!.disableControl(self.cidRemoveButton)
+            
+            if self.listOrderItems.isEmpty {
+                self.displayEngine!.disableControl(self.cidOrderButton)
+            }
+        }
     }
 
     //**************************************************************************
@@ -283,8 +302,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     //**************************************************************************
 
-    func startApp() {
-        let TOP: CGFloat = 25
+    func startApp(de: CocoaDisplayEngine) {
+        
         let LBL_CUSTOMER_HEIGHT = LABEL_HEIGHT
         let LISTVIEW_HEIGHT = LIST_HEIGHT
         let BTN_ADD_WIDTH = BUTTON_WIDTH
@@ -294,17 +313,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let BTN_ORDER_WIDTH = BUTTON_WIDTH
         let BTN_ORDER_HEIGHT = BUTTON_HEIGHT
         let LBL_ORDERTOTAL_HEIGHT = LABEL_HEIGHT
-        
-        var de = self.displayEngine!
+        let windowId: Int = 0 //DisplayEngine.ID_MAIN_WINDOW
 
         var ci: ControlInfo
-        let windowId: Int = 0 //DisplayEngine.ID_MAIN_WINDOW;
-        var controlId: Int = 0
+        var controlId = 1
         var x = LEFT_EDGE
         var y = TOP
         var topRowText = y + 4
         
-        controlId = 1
     
         self.cidCustomerLabel = ControlId(windowId:windowId, controlId:controlId++)
         ci = ControlInfo(cid:self.cidCustomerLabel!)
@@ -400,7 +416,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
         y += LISTVIEW_HEIGHT
         y += 30
-    
         x = LEFT_EDGE
     
         self.cidAddButton = ControlId(windowId:windowId, controlId:controlId++)

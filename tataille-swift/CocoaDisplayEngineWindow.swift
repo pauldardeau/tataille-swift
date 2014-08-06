@@ -1491,24 +1491,28 @@ class CocoaDisplayEngineWindow: NSObject,
         if let view = self.controlFromCid(cid) {
             if let listView = view as? NSTableView {
                 let hash = listView.hashValue
-                println("removing row from view: \(hash)")
+                
+                //println("removing row from view: \(hash)")
+                
                 if var ds = self.mapListViewDataSources[hash] {
                     
-                    let beforeLen = ds.count
-                    println("======== before removing row ==========")
-                    println("len(dataSource) = \(beforeLen)")
-                    self.showListViewDataSource(ds)
+                    //let beforeLen = ds.count
+                    //println("======== before removing row ==========")
+                    //println("len(dataSource) = \(beforeLen)")
+                    //self.showListViewDataSource(ds)
                     
                     ds.removeAtIndex(rowIndex)
                     
-                    let afterLen = ds.count
-                    
-                    println("-------- after removing row ----------")
-                    println("len(dataSource) = \(afterLen)")
-                    self.showListViewDataSource(ds)
-                    
+                    //let afterLen = ds.count
+                    //println("-------- after removing row ----------")
+                    //println("len(dataSource) = \(afterLen)")
+                    //self.showListViewDataSource(ds)
+
+                    // IMPORTANT: swift passes arrays by VALUE, so we have to
+                    // update what's stored!
+                    self.mapListViewDataSources[hash] = ds
+
                     listView.reloadData()
-                    
                     listView.needsDisplay = true
                     return true
                 } else {
