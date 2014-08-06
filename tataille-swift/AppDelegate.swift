@@ -234,9 +234,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 let selectedMenuItem = self.listMenuItems![self.selectedMenuItemIndex]
                 println("add menu item to order '\(selectedMenuItem)'")
                 let itemQty = "1"
-                let itemPrice = "0.00"
+                let itemPrice = "2.25"
                 let itemRow = [itemQty, selectedMenuItem, itemPrice]
-                self.displayEngine!.addRow("1,drink,2.25", cid:self.cidListView)
+                self.displayEngine!.addRow("\(itemQty),\(selectedMenuItem),\(itemPrice)", cid:self.cidListView)
             }
         }
     }

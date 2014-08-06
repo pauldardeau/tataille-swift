@@ -15,6 +15,7 @@ public class CocoaDisplayEngine: DisplayEngine {
     public enum ControlType {
         case Unknown
         case CheckBox
+        case ColorWell
         case ComboBox
         case DatePicker
         case EntryField
@@ -28,6 +29,7 @@ public class CocoaDisplayEngine: DisplayEngine {
         case PasswordField
         case ProgressBar
         case PushButton
+        case SegmentedControl
         case Slider
         case StaticText
         case TabView
@@ -335,6 +337,16 @@ public class CocoaDisplayEngine: DisplayEngine {
     func createPushButton(ci: ControlInfo) -> Bool {
         if let window = self.windowFromCi(ci) {
             return window.createPushButton(ci)
+        } else {
+            return false
+        }
+    }
+
+    //**************************************************************************
+
+    func createSegmentedControl(ci: ControlInfo) -> Bool {
+        if let window = self.windowFromCi(ci) {
+            return window.createSegmentedControl(ci)
         } else {
             return false
         }

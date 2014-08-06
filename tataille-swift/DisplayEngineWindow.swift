@@ -33,6 +33,7 @@ protocol DisplayEngineWindow {
     func createPasswordField(ci: ControlInfo) -> Bool
     func createProgressBar(ci: ControlInfo) -> Bool
     func createPushButton(ci: ControlInfo) -> Bool
+    func createSegmentedControl(ci: ControlInfo) -> Bool
     func createSlider(ci: ControlInfo) -> Bool
     func createStaticText(ci: ControlInfo) -> Bool
     func createTabView(ci: ControlInfo) -> Bool

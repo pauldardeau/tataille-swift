@@ -32,6 +32,7 @@ class CocoaDisplayEngineWindow: NSObject,
     var mapGroupControls: Dictionary<String, Array<NSView>>
     var mapListBoxDataSources: Dictionary<Int, Array<String>>  // <Hash(NSView), [String]>
     var mapListViewDataSources: Dictionary<Int, Array<Array<String>>> // <Hash(NSView), [[String]]>
+    var mapListViewColumns: Dictionary<Int, Array<Int>> // Hash(NSView), Array<Hash(NSTableColumn)>
     var mapCheckBoxHandlers: Dictionary<Int, CheckBoxHandler>
     var mapComboBoxHandlers: Dictionary<Int, ComboBoxHandler>
     var mapListBoxHandlers: Dictionary<Int, ListBoxHandler>
@@ -57,6 +58,7 @@ class CocoaDisplayEngineWindow: NSObject,
         self.mapGroupControls = Dictionary<String, [NSView]>()
         self.mapListBoxDataSources = Dictionary<Int, [String]>()
         self.mapListViewDataSources = Dictionary<Int, [[String]]>()
+        self.mapListViewColumns = Dictionary<Int, [Int]>()
         self.mapCheckBoxHandlers = Dictionary<Int, CheckBoxHandler>()
         self.mapComboBoxHandlers = Dictionary<Int, ComboBoxHandler>()
         self.mapListBoxHandlers = Dictionary<Int, ListBoxHandler>()
@@ -205,6 +207,16 @@ class CocoaDisplayEngineWindow: NSObject,
         if !ci.isVisible {
             view.hidden = !ci.isVisible
         }
+        
+        if ci.haveForegroundColor() {
+            let fgColor = self.colorFromString(ci.foregroundColor! as NSString)
+            //TODO: set foreground color
+        }
+        
+        if ci.haveBackgroundColor() {
+            let bgColor = self.colorFromString(ci.backgroundColor! as NSString)
+            //TODO: set background color
+        }
     
         if !ci.isEnabled || ci.isSelected {
             if let control = view as? NSControl {
@@ -269,20 +281,50 @@ class CocoaDisplayEngineWindow: NSObject,
     func tableView(aTableView: NSTableView!,
                    objectValueForTableColumn tableColumn: NSTableColumn!,
                    row: Int) -> AnyObject! {
-        self.logger.debug("tableView objectValueForTableColumn")
+        //self.logger.debug("tableView objectValueForTableColumn")
 
         if let tv = aTableView {
-            // is it a listbox?
             let hash = tv.hashValue
+
+            // is it a listbox?
             if let listValues = self.mapListBoxDataSources[hash] {
                 return listValues[row]
             } else {
                 if let listRowValues = self.mapListViewDataSources[hash] {
                     if row < listRowValues.count {
-                        self.logger.debug("non-empty list of values found")
+                        //self.logger.debug("non-empty list of values found")
                         let rowValues = listRowValues[row]
-                        //TODO: retrieve column value
-                        return "value"
+                        
+                        if !rowValues.isEmpty {
+                            if var listColumns = self.mapListViewColumns[hash] {
+                                var colIndex = 0
+                                let hashTargetColumn = tableColumn!.hashValue
+                                
+                                for hashColumn in listColumns {
+                                    if hashColumn == hashTargetColumn {
+                                        break
+                                    } else {
+                                        ++colIndex
+                                    }
+                                }
+                                
+                                if colIndex < rowValues.count {
+                                    return rowValues[colIndex]
+                                } else {
+                                    // log error
+                                    self.logger.error("objectValueForTableColumn: column index beyond max values index")
+                                    return ""
+                                }
+                            } else {
+                                // log error
+                                self.logger.error("objectValueForTableColumn: no table columns registered for NSTableView")
+                                return ""
+                            }
+                        } else {
+                            self.logger.error("objectValueForTableColumn: no column data available")
+                            return ""
+                        }
+
                     } else {
                         self.logger.debug("no value available in list")
                         return "xvalue"
@@ -291,15 +333,6 @@ class CocoaDisplayEngineWindow: NSObject,
                     self.logger.debug("no data source found")
                     return ""
                 }
-
-                /*
-                if let listViewValues = self.mapListViewDataSources[hash] {
-                    //TODO: find column position
-                    return "Foo"
-                } else {
-                    return "Foo"
-                }
-                */
             }
         } else {
             self.logger.error("objectValueForTableColumn: aTableView is nil")
@@ -313,7 +346,7 @@ class CocoaDisplayEngineWindow: NSObject,
                    viewForTableColumn tableColumn: NSTableColumn!,
                    row rowIndex: Int) -> NSView! {
                     
-        self.logger.debug("tableView viewForTableColumn")
+        //self.logger.debug("tableView viewForTableColumn")
 
         var view: NSView!
         if let tv = aTableView {
@@ -330,8 +363,9 @@ class CocoaDisplayEngineWindow: NSObject,
             }
             
             if let textField = tf {
-                // is it a listbox?
                 let hash = tv.hashValue
+                
+                // is it a listbox?
                 if let listValues = self.mapListBoxDataSources[hash] {
                     textField.stringValue = listValues[rowIndex]
                 } else {
@@ -339,8 +373,28 @@ class CocoaDisplayEngineWindow: NSObject,
                         if rowIndex < listRowValues.count {
                             let rowValues = listRowValues[rowIndex]
                             if !rowValues.isEmpty {
-                                //TODO: retrieve column value
-                                textField.stringValue = rowValues[0]
+                                if var listColumns = self.mapListViewColumns[hash] {
+                                    var colIndex = 0
+                                    let hashTargetColumn = tableColumn!.hashValue
+                                    
+                                    for hashColumn in listColumns {
+                                        if hashColumn == hashTargetColumn {
+                                            break
+                                        } else {
+                                            ++colIndex
+                                        }
+                                    }
+                                    
+                                    if colIndex < rowValues.count {
+                                        textField.stringValue = rowValues[colIndex]
+                                    } else {
+                                        // log error
+                                        self.logger.error("viewForTableColumn: column index beyond max values index")
+                                    }
+                                } else {
+                                    // log error
+                                    self.logger.error("viewForTableColumn: no table columns registered for NSTableView")
+                                }
                             } else {
                                 self.logger.error("viewForTableColumn: no column data available")
                                 textField.stringValue = ""
@@ -486,6 +540,144 @@ class CocoaDisplayEngineWindow: NSObject,
     }
 
     //**************************************************************************
+    
+    class func hexDigitToInt(hexDigit: NSString) -> Int {
+        let digits: NSString = "0123456789"
+        let rangeDigit = digits.rangeOfString(hexDigit)
+        
+        if rangeDigit.location != NSNotFound {
+            return rangeDigit.location
+        } else {
+            let lowerHexDigit: NSString = hexDigit.lowercaseString
+            let hexDigits: NSString = "abcdef"
+            let rangeHexDigit = hexDigits.rangeOfString(lowerHexDigit)
+            if rangeHexDigit.location != NSNotFound {
+                return 10 + rangeHexDigit.location
+            } else {
+                return -1
+            }
+        }
+    }
+
+    //**************************************************************************
+
+    class func hexStringToInt(hexString: NSString) -> Int {
+        var intValue = 0
+        
+        let firstDigitValue =
+            CocoaDisplayEngineWindow.hexDigitToInt(hexString.substringToIndex(1))
+        if firstDigitValue > -1 {
+            intValue = firstDigitValue * 16
+            
+            let secondDigitValue = CocoaDisplayEngineWindow.hexDigitToInt(hexString.substringWithRange(NSMakeRange(1,1)))
+            if secondDigitValue > -1 {
+                intValue += secondDigitValue
+            } else {
+                intValue = -1
+            }
+        } else {
+            intValue = -1
+        }
+        
+        return intValue
+    }
+
+    //**************************************************************************
+
+    func colorFromString(colorString: String) -> NSColor {
+        var color = NSColor.blackColor()
+        
+        if colorString.hasPrefix("color:") {
+            let colorName: String = (colorString as NSString).substringFromIndex(6)
+            
+            if colorName == "black" {
+                color = NSColor.blackColor()
+            } else if colorName == "blue" {
+                color = NSColor.blueColor()
+            } else if colorName == "brown" {
+                color = NSColor.brownColor()
+            } else if colorName == "clear" {
+                color = NSColor.clearColor()
+            } else if colorName == "cyan" {
+                color = NSColor.cyanColor()
+            } else if colorName == "darkGray" {
+                color = NSColor.darkGrayColor()
+            } else if colorName == "gray" {
+                color = NSColor.grayColor()
+            } else if colorName == "green" {
+                color = NSColor.greenColor()
+            } else if colorName == "lightGray" {
+                color = NSColor.lightGrayColor()
+            } else if colorName == "magenta" {
+                color = NSColor.magentaColor()
+            } else if colorName == "orange" {
+                color = NSColor.orangeColor()
+            } else if colorName == "purple" {
+                color = NSColor.purpleColor()
+            } else if colorName == "red" {
+                color = NSColor.redColor()
+            } else if colorName == "white" {
+                color = NSColor.whiteColor()
+            } else if colorName == "yellow" {
+                color = NSColor.yellowColor()
+            } else {
+                self.logger.error("colorFromString: unrecognized color value ' \(colorName)'")
+            }
+        } else if colorString.hasPrefix("rgb:") {
+            let colorValues = colorString.componentsSeparatedByString(",")
+            if colorValues.count > 2 {
+                let redIntValue: Int? = colorValues[0].toInt()
+                let greenIntValue: Int? = colorValues[1].toInt()
+                let blueIntValue: Int? = colorValues[2].toInt()
+                if redIntValue != nil && greenIntValue != nil && blueIntValue != nil {
+                    //TODO: check that values are between 0-255
+                    let red = redIntValue!
+                    let green = greenIntValue!
+                    let blue = blueIntValue!
+                    if red >= 0 && red <= 255 && green >= 0 && green <= 255 && blue >= 0 && blue <= 255 {
+                        let redValue: CGFloat = CGFloat(red) / 255.0
+                        let greenValue: CGFloat = CGFloat(green) / 255.0
+                        let blueValue: CGFloat = CGFloat(blue) / 255.0
+                        color = NSColor(red:redValue, green: greenValue, blue: blueValue, alpha: 1.0)
+                    } else {
+                        // log error
+                    }
+                } else {
+                    // log error
+                }
+            } else {
+                // log error
+            }
+        } else if colorString.hasPrefix("hexRGB:") {
+            let colorValues: NSString = (colorString as NSString).substringFromIndex(7)
+            if colorValues.length == 6 {
+                let redString = colorValues.substringToIndex(2)
+                let greenString = colorValues.substringWithRange(NSMakeRange(2,2))
+                let blueString = colorValues.substringFromIndex(4)
+                
+                let red = CocoaDisplayEngineWindow.hexStringToInt(redString)
+                let green = CocoaDisplayEngineWindow.hexStringToInt(greenString)
+                let blue = CocoaDisplayEngineWindow.hexStringToInt(blueString)
+                
+                if red > -1 && green > -1 && blue > -1 {
+                    let redValue: CGFloat = CGFloat(red) / 255.0
+                    let greenValue: CGFloat = CGFloat(green) / 255.0
+                    let blueValue: CGFloat = CGFloat(blue) / 255.0
+                    color = NSColor(red:redValue, green: greenValue, blue: blueValue, alpha: 1.0)
+                } else {
+                    // log error
+                }
+            } else {
+                // log error
+            }
+        } else {
+            self.logger.error("colorFromString: unrecognized color value ' \(colorString)'")
+        }
+
+        return color
+    }
+
+    //**************************************************************************
 
     func checkBoxToggled(obj:NSButton) {
         self.logger.debug("checkBoxToggled: check box toggled")
@@ -535,6 +727,29 @@ class CocoaDisplayEngineWindow: NSObject,
     func comboBoxSelectionChange(obj: NSComboBox) {
     }
     
+    //**************************************************************************
+    
+    func createColorWell(ci: ControlInfo) -> Bool {
+        var controlCreated = false
+        
+        if self.isControlInfoValid(ci) {
+            var colorWell = NSColorWell(frame:self.rectForCi(ci))
+            
+            if ci.haveValues() {
+                colorWell.color = self.colorFromString(ci.values!)
+            }
+            
+            //TODO: respond to changes in color selection
+            
+            ci.controlType = CocoaDisplayEngine.ControlType.ColorWell
+            self.populateControl(colorWell, ci:ci)
+            self.registerControl(colorWell, ci:ci)
+            controlCreated = true
+        }
+        
+        return controlCreated
+    }
+
     //**************************************************************************
 
     func createComboBox(ci: ControlInfo) -> Bool {
@@ -637,6 +852,7 @@ class CocoaDisplayEngineWindow: NSObject,
             
             if ci.haveValues() {
                 let value = ci.values!
+                // does it look like a URL?
                 if value.hasPrefix("http") {
                     let url = NSURL(string:value)
                     let urlRequest = NSURLRequest(URL: url)
@@ -749,32 +965,42 @@ class CocoaDisplayEngineWindow: NSObject,
             scrollView.hasVerticalScroller = true
             scrollView.hasHorizontalScroller = true
             scrollView.documentView = tableView
-            scrollView.autoresizesSubviews = true
+            //scrollView.autoresizesSubviews = true
 
             tableView.usesAlternatingRowBackgroundColors = true
             tableView.columnAutoresizingStyle =
                 NSTableViewColumnAutoresizingStyle.UniformColumnAutoresizingStyle
             tableView.rowHeight = 17.0
-            tableView.autoresizesSubviews = true
+            //tableView.autoresizesSubviews = true
             
             self.mapListViewDataSources[hash] = Array<Array<String>>()
+            
+            var listColumns = Array<Int>()
             
             if ci.haveValues() {
                 var listValues = self.valuesFromCi(ci)!
                 let tableHeaderViewRect = NSMakeRect(0.0, 0.0, NSWidth(ci.rect), 22.0)
                 var tableHeaderView = NSTableHeaderView(frame:tableHeaderViewRect)
-                tableHeaderView.autoresizesSubviews = true
+                //tableHeaderView.autoresizesSubviews = true
                 tableView.headerView = tableHeaderView
                 tableView.addSubview(tableHeaderView)
                 
                 for colText in listValues {
                     var tableColumn = NSTableColumn(identifier:colText)
+                    let hashTableColumn = tableColumn.hashValue
+                    
+                    listColumns.append(hashTableColumn)
+                    let colIndex = listColumns.count - 1
+                    //println("registering column '\(colText)' at index \(colIndex)")
+                    
                     //NSTableCellView
                     //var headerCell = tableColumn.headerCell!
                     //headerCell.setStringValue(colText, resolvingEntities: false)
                     tableView.addTableColumn(tableColumn)
                 }
             }
+            
+            self.mapListViewColumns[hash] = listColumns
 
             tableView.setDataSource(self)
             tableView.setDelegate(self)
@@ -888,6 +1114,43 @@ class CocoaDisplayEngineWindow: NSObject,
         return controlCreated
     }
     
+    //**************************************************************************
+    
+    func createSegmentedControl(ci: ControlInfo) -> Bool {
+        var controlCreated = false
+        
+        if self.isControlInfoValid(ci) {
+            var segmentedControl = NSSegmentedControl(frame:self.rectForCi(ci))
+            
+            if ci.haveValues() {
+                var listValues = self.valuesFromCi(ci)!
+                segmentedControl.segmentCount = listValues.count
+                
+                var i = 0
+                
+                for segmentText in listValues {
+                    segmentedControl.setLabel(segmentText, forSegment: i)
+                    ++i
+                }
+            }
+            
+            // TexturedRounded, RoundedRect, Capsule, SmallSqure
+            let style = NSSegmentStyle.Rounded
+            
+            segmentedControl.segmentStyle = style
+            
+            //segmentedControl.target = self
+            //segmentedControl.action = "pushButtonClicked:"
+            
+            ci.controlType = CocoaDisplayEngine.ControlType.SegmentedControl
+            self.populateControl(segmentedControl, ci:ci)
+            self.registerControl(segmentedControl, ci:ci)
+            controlCreated = true
+        }
+        
+        return controlCreated
+    }
+
     //**************************************************************************
 
     func createSlider(ci: ControlInfo) -> Bool {
@@ -1183,26 +1446,31 @@ class CocoaDisplayEngineWindow: NSObject,
         if let view = self.controlFromCid(cid) {
             if let listView = view as? NSTableView {
                 let hash = listView.hashValue
-                println("adding row to view: \(hash)")
+                
+                //println("adding row to view: \(hash)")
+                
                 if var ds = self.mapListViewDataSources[hash] {
                     let parsedValues: [String] = rowText.componentsSeparatedByString(",")
                     
-                    let beforeLen = ds.count
-                    println("======== before appending row ==========")
-                    println("len(dataSource) = \(beforeLen)")
-                    self.showListViewDataSource(ds)
+                    //let beforeLen = ds.count
+                    //println("======== before appending row ==========")
+                    //println("len(dataSource) = \(beforeLen)")
+                    //self.showListViewDataSource(ds)
                     
                     ds.append(parsedValues)
                         
-                    let afterLen = ds.count
+                    //let afterLen = ds.count
+                    //println("-------- after appending row ----------")
+                    //println("len(dataSource) = \(afterLen)")
+                    //self.showListViewDataSource(ds)
                     
-                    println("-------- after appending row ----------")
-                    println("len(dataSource) = \(afterLen)")
-                    self.showListViewDataSource(ds)
+                    // IMPORTANT: swift passes arrays by VALUE, so we have to
+                    // update what's stored!
+                    self.mapListViewDataSources[hash] = ds
                     
                     listView.reloadData()
-
                     listView.needsDisplay = true
+
                     return true
                 } else {
                     self.logger.error("addRow: no data source exists for ListView")

@@ -75,6 +75,18 @@ public class ControlInfo {
     }
 
     //**************************************************************************
+    
+    func haveForegroundColor() -> Bool {
+        return ControlInfo.haveStringValue(self.foregroundColor)
+    }
+
+    //**************************************************************************
+
+    func haveBackgroundColor() -> Bool {
+        return ControlInfo.haveStringValue(self.backgroundColor)
+    }
+
+    //**************************************************************************
 
     func haveGroupName() -> Bool {
         return ControlInfo.haveStringValue(self.groupName)
