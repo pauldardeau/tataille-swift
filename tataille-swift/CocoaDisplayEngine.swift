@@ -16,10 +16,12 @@ public class CocoaDisplayEngine: DisplayEngine {
         case Unknown
         case CheckBox
         case ComboBox
+        case DatePicker
         case EntryField
         case GroupBox
         case HtmlBrowser
         case ImageView
+        case LevelIndicator
         case ListBox
         case ListView
         case Panel
@@ -219,6 +221,16 @@ public class CocoaDisplayEngine: DisplayEngine {
     }
 
     //**************************************************************************
+    
+    func createDatePicker(ci: ControlInfo) -> Bool {
+        if let window = self.windowFromCi(ci) {
+            return window.createDatePicker(ci)
+        } else {
+            return false
+        }
+    }
+
+    //**************************************************************************
 
     func createEntryField(ci: ControlInfo) -> Bool {
         if let window = self.windowFromCi(ci) {
@@ -258,6 +270,16 @@ public class CocoaDisplayEngine: DisplayEngine {
         }
     }
 
+    //**************************************************************************
+
+    func createLevelIndicator(ci: ControlInfo) -> Bool {
+        if let window = self.windowFromCi(ci) {
+            return window.createLevelIndicator(ci)
+        } else {
+            return false
+        }
+    }
+    
     //**************************************************************************
 
     func createListBox(ci: ControlInfo) -> Bool {
@@ -517,6 +539,16 @@ public class CocoaDisplayEngine: DisplayEngine {
     func addRow(rowText: String, cid: ControlId) -> Bool {
         if let window = self.windowFromCid(cid) {
             return window.addRow(rowText, cid:cid)
+        } else {
+            return false
+        }
+    }
+
+    //**************************************************************************
+    
+    func removeRow(rowIndex: Int, cid: ControlId) -> Bool {
+        if let window = self.windowFromCid(cid) {
+            return window.removeRow(rowIndex, cid:cid)
         } else {
             return false
         }

@@ -10,13 +10,13 @@ import Foundation
 
 public class Logger {
     
-    public enum LogLevel {
-        case Critical
-        case Error
-        case Warn
-        case Info
-        case Debug
-        case Verbose
+    public enum LogLevel: Int {
+        case Critical  = 0
+        case Error     = 1
+        case Warn      = 2
+        case Info      = 3
+        case Debug     = 4
+        case Verbose   = 5
     }
     
     let CRITICAL_PREFIX = "critical:"
@@ -26,26 +26,18 @@ public class Logger {
     let DEBUG_PREFIX    = "debug:"
     let VERBOSE_PREFIX  = "verbose:"
     
-    let CRITICAL_VALUE  = 0
-    let ERROR_VALUE     = 1
-    let WARN_VALUE      = 2
-    let INFO_VALUE      = 3
-    let DEBUG_VALUE     = 4
-    let VERBOSE_VALUE   = 5
-    
     var logLevel: LogLevel = LogLevel.Debug
     var levelValue: Int
     
     
     init() {
         self.logLevel = LogLevel.Debug
-        self.levelValue = DEBUG_VALUE
+        self.levelValue = self.logLevel.toRaw()
     }
     
     init(logLevel: LogLevel) {
         self.logLevel = logLevel
-        self.levelValue = DEBUG_VALUE
-        self.levelValue = self.getLogLevelValue(logLevel)
+        self.levelValue = self.logLevel.toRaw()
     }
     
     func isLoggingLevel(logLevel: LogLevel) -> Bool {
@@ -62,20 +54,7 @@ public class Logger {
     }
     
     func getLogLevelValue(aLogLevel: LogLevel) -> Int {
-        switch (aLogLevel) {
-            case LogLevel.Critical:
-                return CRITICAL_VALUE
-            case LogLevel.Error:
-                return ERROR_VALUE
-            case LogLevel.Warn:
-                return WARN_VALUE
-            case LogLevel.Info:
-                return INFO_VALUE
-            case LogLevel.Debug:
-                return DEBUG_VALUE
-            case LogLevel.Verbose:
-                return VERBOSE_VALUE
-        }
+        return aLogLevel.toRaw()
     }
     
     func getPrefix(aLogLevel: LogLevel) -> String {

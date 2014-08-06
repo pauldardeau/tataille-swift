@@ -29,15 +29,19 @@ protocol DisplayEngine {
     
     // --------- possible control types --------
     // color picker (NSColorPicker)
-    // date picker (NSDatePicker)
-    // level indicator (NSLevelIndicator)
+    // timer
+    // PDF file viewer (PDFDocument)
+    // QuickTime movie player (QTKit, QTMovie)
+    // Audio player
     
     func createCheckBox(ci: ControlInfo) -> Bool
     func createComboBox(ci: ControlInfo) -> Bool
+    func createDatePicker(ci: ControlInfo) -> Bool
     func createEntryField(ci: ControlInfo) -> Bool
     func createGroupBox(ci: ControlInfo) -> Bool
     func createHtmlBrowser(ci: ControlInfo) -> Bool
     func createImageView(ci: ControlInfo) -> Bool
+    func createLevelIndicator(ci: ControlInfo) -> Bool
     func createListBox(ci: ControlInfo) -> Bool
     func createListView(ci: ControlInfo) -> Bool
     func createPanel(ci: ControlInfo) -> Bool
@@ -71,7 +75,75 @@ protocol DisplayEngine {
     func setPos(point: NSPoint, cid: ControlId) -> Bool
     func setRect(rect: NSRect, cid: ControlId) -> Bool
     
+    // CheckBox
+    //func setChecked(isChecked: Bool, cid:ControlId) -> Bool
+    
+    // ComboBox
+    // addItem
+    // insertItem
+    // removeItem
+    // selectItem
+    // updateItem
+    // clear or removeAll
+    
+    // EntryField
+    // setText
+    
+    // GroupBox
+    // setText
+    
+    // HtmlBrowser
+    // setHtmlText
+    // setUrl
+    
+    // ImageView
+    // setImage
+    
+    // LevelIndicator
+    // setLevel
+    
+    // ListBox
+    // addItem
+    // deselectItem
+    // insertItem
+    // removeItem
+    // selectItem
+    // updateItem
+    // clear or removeAll
+    
+    // ListView
     func addRow(rowText: String, cid: ControlId) -> Bool
+    func removeRow(rowIndex: Int, cid: ControlId) -> Bool
+    // deselectRow
+    // insert
+    // selectRow
+    // update
+    // clear or removeAll
+    
+    // ProgressBar
+    // setProgressPercent
+    
+    // PushButton
+    // setText
+    
+    // Slider
+    // setValue
+    
+    // StaticText
+    // setText
+    
+    // TabView
+    // addTab
+    // insertTab
+    // updateTab
+    // removeTab
+    // setTabEnabled
+    // setTabVisible
+    
+    // TextView
+    // setText
+    
+    // Tree
     
     func setCheckBoxHandler(handler: CheckBoxHandler, cid: ControlId) -> Bool
     func setComboBoxHandler(handler: ComboBoxHandler, cid: ControlId) -> Bool

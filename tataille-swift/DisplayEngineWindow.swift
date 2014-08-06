@@ -21,10 +21,12 @@ protocol DisplayEngineWindow {
     
     func createCheckBox(ci: ControlInfo) -> Bool
     func createComboBox(ci: ControlInfo) -> Bool
+    func createDatePicker(ci: ControlInfo) -> Bool
     func createEntryField(ci: ControlInfo) -> Bool
     func createGroupBox(ci: ControlInfo) -> Bool
     func createHtmlBrowser(ci: ControlInfo) -> Bool
     func createImageView(ci: ControlInfo) -> Bool
+    func createLevelIndicator(ci: ControlInfo) -> Bool
     func createListBox(ci: ControlInfo) -> Bool
     func createListView(ci: ControlInfo) -> Bool
     func createPanel(ci: ControlInfo) -> Bool
@@ -57,8 +59,10 @@ protocol DisplayEngineWindow {
     func setSize(controlSize: NSSize, cid: ControlId) -> Bool
     func setPos(point: NSPoint, cid: ControlId) -> Bool
     func setRect(rect: NSRect, cid: ControlId) -> Bool
-    
+
+    // ListView
     func addRow(rowText: String, cid: ControlId) -> Bool
+    func removeRow(rowIndex: Int, cid: ControlId) -> Bool
 
     func setCheckBoxHandler(handler: CheckBoxHandler, cid: ControlId) -> Bool
     func setComboBoxHandler(handler: ComboBoxHandler, cid: ControlId) -> Bool

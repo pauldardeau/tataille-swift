@@ -236,7 +236,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 let itemQty = "1"
                 let itemPrice = "0.00"
                 let itemRow = [itemQty, selectedMenuItem, itemPrice]
-                self.displayEngine!.addRow("", cid:self.cidListView)
+                self.displayEngine!.addRow("1,drink,2.25", cid:self.cidListView)
             }
         }
     }

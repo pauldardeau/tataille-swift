@@ -8,6 +8,7 @@
 
 import Foundation
 import Cocoa
+import WebKit
 
 
 // Enhancements
@@ -28,9 +29,9 @@ class CocoaDisplayEngineWindow: NSObject,
     var windowId: Int
     var mapControlIdToControl: Dictionary<Int, NSView>
     var mapControlToControlId: Dictionary<Int, Int> // <Hash(NSView), Int>
-    var mapGroupControls: Dictionary<String, [NSView]>
-    var mapListBoxDataSources: Dictionary<Int, [String]>  // <Hash(NSView), [String]>
-    var mapListViewDataSources: Dictionary<Int, [[String]]> // <Hash(NSView), [[String]]>
+    var mapGroupControls: Dictionary<String, Array<NSView>>
+    var mapListBoxDataSources: Dictionary<Int, Array<String>>  // <Hash(NSView), [String]>
+    var mapListViewDataSources: Dictionary<Int, Array<Array<String>>> // <Hash(NSView), [[String]]>
     var mapCheckBoxHandlers: Dictionary<Int, CheckBoxHandler>
     var mapComboBoxHandlers: Dictionary<Int, ComboBoxHandler>
     var mapListBoxHandlers: Dictionary<Int, ListBoxHandler>
@@ -248,15 +249,17 @@ class CocoaDisplayEngineWindow: NSObject,
             // is it a listbox?
             let hash = tv.hashValue
             if let listValues = self.mapListBoxDataSources[hash] {
-                return countElements(listValues)
+                return listValues.count
             } else {
                 if let listViewValues = self.mapListViewDataSources[hash] {
-                    return 1 //countElements(listViewValues)
+                    return listViewValues.count
                 } else {
-                    return 3
+                    self.logger.error("numberOfRowsInTableView: no datasource available for listview")
+                    return 0
                 }
             }
         } else {
+            self.logger.error("numberOfRowsInTableView: no tableview provided")
             return 0
         }
     }
@@ -266,21 +269,40 @@ class CocoaDisplayEngineWindow: NSObject,
     func tableView(aTableView: NSTableView!,
                    objectValueForTableColumn tableColumn: NSTableColumn!,
                    row: Int) -> AnyObject! {
-                    
+        self.logger.debug("tableView objectValueForTableColumn")
+
         if let tv = aTableView {
             // is it a listbox?
             let hash = tv.hashValue
             if let listValues = self.mapListBoxDataSources[hash] {
                 return listValues[row]
             } else {
+                if let listRowValues = self.mapListViewDataSources[hash] {
+                    if row < listRowValues.count {
+                        self.logger.debug("non-empty list of values found")
+                        let rowValues = listRowValues[row]
+                        //TODO: retrieve column value
+                        return "value"
+                    } else {
+                        self.logger.debug("no value available in list")
+                        return "xvalue"
+                    }
+                } else {
+                    self.logger.debug("no data source found")
+                    return ""
+                }
+
+                /*
                 if let listViewValues = self.mapListViewDataSources[hash] {
                     //TODO: find column position
                     return "Foo"
                 } else {
                     return "Foo"
                 }
+                */
             }
         } else {
+            self.logger.error("objectValueForTableColumn: aTableView is nil")
             return ""
         }
     }
@@ -290,6 +312,9 @@ class CocoaDisplayEngineWindow: NSObject,
     func tableView(aTableView: NSTableView!,
                    viewForTableColumn tableColumn: NSTableColumn!,
                    row rowIndex: Int) -> NSView! {
+                    
+        self.logger.debug("tableView viewForTableColumn")
+
         var view: NSView!
         if let tv = aTableView {
             var tf: NSTextField!
@@ -311,19 +336,31 @@ class CocoaDisplayEngineWindow: NSObject,
                     textField.stringValue = listValues[rowIndex]
                 } else {
                     if let listRowValues = self.mapListViewDataSources[hash] {
-                        if rowIndex < countElements(listRowValues) {
+                        if rowIndex < listRowValues.count {
                             let rowValues = listRowValues[rowIndex]
-                            textField.stringValue = "value"
+                            if !rowValues.isEmpty {
+                                //TODO: retrieve column value
+                                textField.stringValue = rowValues[0]
+                            } else {
+                                self.logger.error("viewForTableColumn: no column data available")
+                                textField.stringValue = ""
+                            }
                         } else {
+                            self.logger.error("viewForTableColumn: no row data available")
                             textField.stringValue = ""
                         }
                     } else {
+                        self.logger.error("viewForTableColumn: no data source for listview")
                         textField.stringValue = ""
                     }
                 }
                 
                 view = tf
+            } else {
+                self.logger.error("viewForTableColumn: view is not a textfield")
             }
+        } else {
+            self.logger.error("viewForTableColumn: no tableview provided")
         }
                     
         return view
@@ -526,6 +563,28 @@ class CocoaDisplayEngineWindow: NSObject,
     }
     
     //**************************************************************************
+    
+    func createDatePicker(ci: ControlInfo) -> Bool {
+        var controlCreated = false
+        
+        if self.isControlInfoValid(ci) {
+            var datePicker = NSDatePicker(frame:self.rectForCi(ci))
+            
+            if ci.haveText() {
+                //TODO:
+                //textField.stringValue = ci.text!
+            }
+            
+            ci.controlType = CocoaDisplayEngine.ControlType.DatePicker
+            self.populateControl(datePicker, ci:ci)
+            self.registerControl(datePicker, ci:ci)
+            controlCreated = true
+        }
+        
+        return controlCreated
+    }
+
+    //**************************************************************************
 
     func createEntryField(ci: ControlInfo) -> Bool {
         var controlCreated = false
@@ -574,14 +633,24 @@ class CocoaDisplayEngineWindow: NSObject,
         var controlCreated = false
         
         if self.isControlInfoValid(ci) {
-            //var webView = WebView(frame:self.rectForCi(ci))
+            var webView = WebView(frame:self.rectForCi(ci))
             
-            //TODO: load URL or text if present
+            if ci.haveValues() {
+                let value = ci.values!
+                if value.hasPrefix("http") {
+                    let url = NSURL(string:value)
+                    let urlRequest = NSURLRequest(URL: url)
+                    webView.mainFrame.loadRequest(urlRequest)
+                } else {
+                    // treat the value as HTML content and set it in the browser
+                    webView.mainFrame.loadHTMLString(value, baseURL: nil)
+                }
+            }
             
-            //ci.controlType = CocoaDisplayEngine.ControlType.HtmlBrowser
-            //self.populateControl(webView, ci:ci)
-            //self.registerControl(webView, ci:ci)
-            //controlCreated = true
+            ci.controlType = CocoaDisplayEngine.ControlType.HtmlBrowser
+            self.populateControl(webView, ci:ci)
+            self.registerControl(webView, ci:ci)
+            controlCreated = true
         }
         
         return controlCreated
@@ -612,6 +681,30 @@ class CocoaDisplayEngineWindow: NSObject,
     
     //**************************************************************************
 
+    func createLevelIndicator(ci: ControlInfo) -> Bool {
+        var controlCreated = false
+        
+        if self.isControlInfoValid(ci) {
+            var levelIndicator = NSLevelIndicator(frame:self.rectForCi(ci))
+            
+            levelIndicator.minValue = 0.0
+            levelIndicator.maxValue = 0.0
+            
+            if ci.haveValues() {
+                //TODO:
+            }
+            
+            ci.controlType = CocoaDisplayEngine.ControlType.LevelIndicator
+            self.populateControl(levelIndicator, ci:ci)
+            self.registerControl(levelIndicator, ci:ci)
+            controlCreated = true
+        }
+        
+        return controlCreated
+    }
+
+    //**************************************************************************
+
     func createListBox(ci: ControlInfo) -> Bool {
         var controlCreated = false
         
@@ -627,7 +720,7 @@ class CocoaDisplayEngineWindow: NSObject,
                 var listValues = self.valuesFromCi(ci)!
                 self.mapListBoxDataSources[hash] = listValues
             } else {
-                self.mapListBoxDataSources[hash] = [String]()
+                self.mapListBoxDataSources[hash] = Array<String>()
             }
             
             tableView.setDataSource(self)
@@ -664,7 +757,7 @@ class CocoaDisplayEngineWindow: NSObject,
             tableView.rowHeight = 17.0
             tableView.autoresizesSubviews = true
             
-            self.mapListViewDataSources[hash] = [[String]]()
+            self.mapListViewDataSources[hash] = Array<Array<String>>()
             
             if ci.haveValues() {
                 var listValues = self.valuesFromCi(ci)!
@@ -1009,9 +1102,8 @@ class CocoaDisplayEngineWindow: NSObject,
     //**************************************************************************
 
     func setEnabled(isEnabled: Bool, groupName: String) -> Bool {
-        var optGroupControls = self.controlsForGroup(groupName)
-        if optGroupControls != nil {
-            for view in optGroupControls! {
+        if var optGroupControls = self.controlsForGroup(groupName) {
+            for view in optGroupControls {
                 if let control = view as? NSControl {
                     control.enabled = isEnabled
                 }
@@ -1062,17 +1154,103 @@ class CocoaDisplayEngineWindow: NSObject,
 
     //**************************************************************************
     
+    func showListViewDataSource(ds:[[String]]) {
+        var i = 0
+        
+        for row in ds {
+            print("row \(i): ")
+            
+            var j = 0
+            for col in row {
+                if j > 0 {
+                    print(",")
+                }
+                print("\(col)")
+                ++j
+            }
+            println("")
+            ++i
+        }
+        
+        if i == 0 {
+            println("<no data>")
+        }
+    }
+
+    //**************************************************************************
+
     func addRow(rowText: String, cid: ControlId) -> Bool {
         if let view = self.controlFromCid(cid) {
             if let listView = view as? NSTableView {
-                var dataSource = self.mapListViewDataSources[cid.controlId]
-                if dataSource != nil {
+                let hash = listView.hashValue
+                println("adding row to view: \(hash)")
+                if var ds = self.mapListViewDataSources[hash] {
                     let parsedValues: [String] = rowText.componentsSeparatedByString(",")
-                    dataSource!.append(parsedValues)
+                    
+                    let beforeLen = ds.count
+                    println("======== before appending row ==========")
+                    println("len(dataSource) = \(beforeLen)")
+                    self.showListViewDataSource(ds)
+                    
+                    ds.append(parsedValues)
+                        
+                    let afterLen = ds.count
+                    
+                    println("-------- after appending row ----------")
+                    println("len(dataSource) = \(afterLen)")
+                    self.showListViewDataSource(ds)
+                    
+                    listView.reloadData()
+
                     listView.needsDisplay = true
                     return true
+                } else {
+                    self.logger.error("addRow: no data source exists for ListView")
                 }
+            } else {
+                self.logger.error("addRow: control is not a NSTableView")
             }
+        } else {
+            self.logger.error("addRow: invalid ControlId")
+        }
+
+        return false
+    }
+
+    //**************************************************************************
+
+    func removeRow(rowIndex: Int, cid: ControlId) -> Bool {
+        if let view = self.controlFromCid(cid) {
+            if let listView = view as? NSTableView {
+                let hash = listView.hashValue
+                println("removing row from view: \(hash)")
+                if var ds = self.mapListViewDataSources[hash] {
+                    
+                    let beforeLen = ds.count
+                    println("======== before removing row ==========")
+                    println("len(dataSource) = \(beforeLen)")
+                    self.showListViewDataSource(ds)
+                    
+                    ds.removeAtIndex(rowIndex)
+                    
+                    let afterLen = ds.count
+                    
+                    println("-------- after removing row ----------")
+                    println("len(dataSource) = \(afterLen)")
+                    self.showListViewDataSource(ds)
+                    
+                    listView.reloadData()
+                    
+                    listView.needsDisplay = true
+                    return true
+                } else {
+                    self.logger.error("removeRow: no data source exists for ListView")
+                }
+            } else {
+                self.logger.error("removeRow: control is not a NSTableView")
+            }
+        } else {
+            self.logger.error("removeRow: invalid ControlId")
         }
 
         return false

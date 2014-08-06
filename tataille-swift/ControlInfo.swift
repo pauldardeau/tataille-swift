@@ -10,8 +10,6 @@ import Foundation
 
 public class ControlInfo {
     
-    // foreground color
-    // background color
     // font
     // audio clip
 
@@ -23,6 +21,8 @@ public class ControlInfo {
     public var helpCaption: String?
     public var values: String?
     public var valuesDelimiter: String?
+    public var foregroundColor: String?
+    public var backgroundColor: String?
     public var rect: NSRect
     public var isSelected = false  // only for checkbox? if so, probably remove
     public var isVisible = true

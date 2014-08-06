@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		DA28ABAE19927EF3007C78D4 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DA28ABAD19927EF3007C78D4 /* WebKit.framework */; };
 		DA2C539E199033BB0053F262 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA2C539D199033BB0053F262 /* Logger.swift */; };
 		DA573586198C0ED500BFDD9C /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA573585198C0ED500BFDD9C /* main.swift */; };
 		DA573588198C0ED500BFDD9C /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA573587198C0ED500BFDD9C /* AppDelegate.swift */; };
@@ -39,6 +40,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		DA28ABAD19927EF3007C78D4 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 		DA2C539D199033BB0053F262 /* Logger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
 		DA573580198C0ED500BFDD9C /* tataille-swift.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "tataille-swift.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		DA573584198C0ED500BFDD9C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -69,6 +71,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DA28ABAE19927EF3007C78D4 /* WebKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -85,6 +88,7 @@
 		DA573577198C0ED500BFDD9C = {
 			isa = PBXGroup;
 			children = (
+				DA28ABAD19927EF3007C78D4 /* WebKit.framework */,
 				DA573582198C0ED500BFDD9C /* tataille-swift */,
 				DA573595198C0ED500BFDD9C /* tataille-swiftTests */,
 				DA573581198C0ED500BFDD9C /* Products */,
