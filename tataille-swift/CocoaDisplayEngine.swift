@@ -567,6 +567,16 @@ public class CocoaDisplayEngine: DisplayEngine {
     }
 
     //**************************************************************************
+    
+    func setStaticText(text: NSString, cid: ControlId) -> Bool {
+        if let window = self.windowFromCid(cid) {
+            return window.setStaticText(text, cid: cid)
+        } else {
+            return false
+        }
+    }
+
+    //**************************************************************************
 
     func setCheckBoxHandler(handler: CheckBoxHandler, cid: ControlId) -> Bool {
         if let window = self.windowFromCid(cid) {

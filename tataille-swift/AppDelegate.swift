@@ -32,7 +32,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     let LBL_ORDERTOTAL_WIDTH: CGFloat = 65.0
     let VALUES_DELIMITER = ","
     let PAYMENT_METHOD_VALUES = "Cash,Amex,Discover,MasterCard,Visa"
-    let MENU_ITEM_VALUES = "Cheeseburger,Chips,Drink,French Fries,Grilled Cheese,Hamburger,Hot Dog,Peanuts"
 
     
     var displayEngine: CocoaDisplayEngine!
@@ -47,21 +46,46 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var cidRemoveButton: ControlId!
     var cidOrderButton: ControlId!
     var cidOrderTotal: ControlId!
-    var listMenuItems: [String]!
+    var listMenuItems = [String]()
+    var menuItems = ""
     var listPaymentMethods: [String]!
     var paymentMethod: String!
     var isDelivery: Bool = false
     var isRushOrder: Bool = false
     var selectedMenuItemIndex = -1
     var selectedOrderItemIndex = -1
+    var menu = Dictionary<String, Double>()
+    var orderTotal = 0.00
+
+    //**************************************************************************
+    
+    func addMenuItem(item: String, price: Double) {
+        self.menu[item] = price
+        self.listMenuItems.append(item)
+        if countElements(self.menuItems) > 0 {
+            self.menuItems += ","
+        }
+        
+        self.menuItems += item
+    }
 
     //**************************************************************************
 
     func applicationDidFinishLaunching(aNotification: NSNotification?) {
         // Insert code here to initialize your application
         self.displayEngine = CocoaDisplayEngine(mainWindow:self.window!)
+        
+        // set up our menu
+        self.addMenuItem("Cheeseburger", price:4.25)
+        self.addMenuItem("Chips", price:2.00)
+        self.addMenuItem("Drink", price:1.75)
+        self.addMenuItem("French Fries", price:2.25)
+        self.addMenuItem("Grilled Cheese", price:3.75)
+        self.addMenuItem("Hamburger", price:4.00)
+        self.addMenuItem("Hot Dog", price:3.00)
+        self.addMenuItem("Peanuts", price:2.00)
+
         self.listPaymentMethods = PAYMENT_METHOD_VALUES.componentsSeparatedByString(",")
-        self.listMenuItems = MENU_ITEM_VALUES.componentsSeparatedByString(",")
         self.startApp();
     }
 
@@ -231,12 +255,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         if let cidMenu = self.cidListBox {
             if let cidOrderItems = self.cidListView {
-                let selectedMenuItem = self.listMenuItems![self.selectedMenuItemIndex]
+                let selectedMenuItem = self.listMenuItems[self.selectedMenuItemIndex]
                 println("add menu item to order '\(selectedMenuItem)'")
+                let itemPrice = self.menu[selectedMenuItem]!
                 let itemQty = "1"
-                let itemPrice = "2.25"
-                let itemRow = [itemQty, selectedMenuItem, itemPrice]
-                self.displayEngine!.addRow("\(itemQty),\(selectedMenuItem),\(itemPrice)", cid:self.cidListView)
+                let itemPriceAsString = NSString(format:"%.2f", itemPrice)
+                let itemRow = [itemQty, selectedMenuItem, itemPriceAsString]
+                self.displayEngine!.addRow("\(itemQty),\(selectedMenuItem),\(itemPriceAsString)", cid:self.cidListView)
+                self.orderTotal += itemPrice
+                let orderTotalString = NSString(format:"%.2f", self.orderTotal)
+                self.displayEngine!.setStaticText(orderTotalString, cid: self.cidOrderTotal)
             }
         }
     }
@@ -316,6 +344,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
         x += CK_RUSH_WIDTH
         x += 15
+        
+        let cidTotalLabel = ControlId(windowId:windowId, controlId:controlId++)
+        ci = ControlInfo(cid:cidTotalLabel)
+        let w: CGFloat = 50.0
+        ci.rect = NSMakeRect(x, topRowText, w, LBL_ORDERTOTAL_HEIGHT)
+        ci.text = "Total: $ "
+        de.createStaticText(ci)
+        
+        x += w
     
         self.cidOrderTotal = ControlId(windowId:windowId, controlId:controlId++)
         ci = ControlInfo(cid:self.cidOrderTotal)
@@ -342,7 +379,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         self.cidListBox = ControlId(windowId:windowId, controlId:controlId++)
         ci = ControlInfo(cid:self.cidListBox)
         ci.rect = NSMakeRect(x, y, LIST_WIDTH, LIST_HEIGHT)
-        ci.values = MENU_ITEM_VALUES
+        ci.values = self.menuItems
         ci.valuesDelimiter = VALUES_DELIMITER
         ci.helpCaption = "list of items available for order"
         de.createListBox(ci)

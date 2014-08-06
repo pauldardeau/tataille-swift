@@ -1525,6 +1525,18 @@ class CocoaDisplayEngineWindow: NSObject,
     }
 
     //**************************************************************************
+    
+    func setStaticText(text: NSString, cid: ControlId) -> Bool {
+        if var view = self.controlFromCid(cid) {
+            if var textField = view as? NSTextField {
+                textField.stringValue = text
+            }
+        }
+        
+        return false
+    }
+
+    //**************************************************************************
 
     func setCheckBoxHandler(handler: CheckBoxHandler, cid: ControlId) -> Bool {
         let controlId = cid.controlId

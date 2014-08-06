@@ -60,6 +60,8 @@ protocol DisplayEngineWindow {
     func setSize(controlSize: NSSize, cid: ControlId) -> Bool
     func setPos(point: NSPoint, cid: ControlId) -> Bool
     func setRect(rect: NSRect, cid: ControlId) -> Bool
+    
+    func setStaticText(text: NSString, cid: ControlId) -> Bool
 
     // ListView
     func addRow(rowText: String, cid: ControlId) -> Bool

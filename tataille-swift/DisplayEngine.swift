@@ -129,9 +129,9 @@ protocol DisplayEngine {
     
     // Slider
     // setValue
-    
+
     // StaticText
-    // setText
+    func setStaticText(text: NSString, cid: ControlId) -> Bool
     
     // TabView
     // addTab
