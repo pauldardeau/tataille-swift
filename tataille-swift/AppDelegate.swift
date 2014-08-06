@@ -297,7 +297,20 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     //**************************************************************************
 
     func onOrderClicked() {
-        println("order clicked")
+        let numberItems = self.listOrderItems.count
+        let orderTotalString = NSString(format:"%.2f", self.orderTotal)
+        
+        let orderAlert = NSAlert()
+        orderAlert.messageText = "Order Confirmation"
+        orderAlert.informativeText = "\(numberItems) items for total: $ \(orderTotalString)"
+        orderAlert.runModal()
+
+        // clear out app for next order
+        self.orderTotal = 0.00
+        self.listOrderItems.removeAll(keepCapacity: true)
+        self.displayEngine!.removeAllRows(self.cidListView)
+        self.displayEngine!.setStaticText("0.00", cid: self.cidOrderTotal)
+        self.displayEngine!.disableControl(self.cidOrderButton)
     }
 
     //**************************************************************************

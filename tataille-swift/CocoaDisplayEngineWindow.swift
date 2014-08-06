@@ -1530,6 +1530,36 @@ class CocoaDisplayEngineWindow: NSObject,
 
     //**************************************************************************
     
+    func removeAllRows(cid: ControlId) -> Bool {
+        if let view = self.controlFromCid(cid) {
+            if let listView = view as? NSTableView {
+                let hash = listView.hashValue
+                
+                if var ds = self.mapListViewDataSources[hash] {
+                    ds.removeAll(keepCapacity: true)
+                    
+                    // IMPORTANT: swift passes arrays by VALUE, so we have to
+                    // update what's stored!
+                    self.mapListViewDataSources[hash] = ds
+                    
+                    listView.reloadData()
+                    listView.needsDisplay = true
+                    return true
+                } else {
+                    self.logger.error("removeAllRows: no data source exists for ListView")
+                }
+            } else {
+                self.logger.error("removeAllRows: control is not a NSTableView")
+            }
+        } else {
+            self.logger.error("removeAllRows: invalid ControlId")
+        }
+        
+        return false
+    }
+
+    //**************************************************************************
+
     func setStaticText(text: NSString, cid: ControlId) -> Bool {
         if var view = self.controlFromCid(cid) {
             if var textField = view as? NSTextField {

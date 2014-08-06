@@ -115,11 +115,11 @@ protocol DisplayEngine {
     // ListView
     func addRow(rowText: String, cid: ControlId) -> Bool
     func removeRow(rowIndex: Int, cid: ControlId) -> Bool
+    func removeAllRows(cid: ControlId) -> Bool
     // deselectRow
     // insert
     // selectRow
     // update
-    // clear or removeAll
     
     // ProgressBar
     // setProgressPercent

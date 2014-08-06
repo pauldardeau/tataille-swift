@@ -568,6 +568,16 @@ public class CocoaDisplayEngine: DisplayEngine {
 
     //**************************************************************************
     
+    func removeAllRows(cid: ControlId) -> Bool {
+        if let window = self.windowFromCid(cid) {
+            return window.removeAllRows(cid)
+        } else {
+            return false
+        }
+    }
+
+    //**************************************************************************
+
     func setStaticText(text: NSString, cid: ControlId) -> Bool {
         if let window = self.windowFromCid(cid) {
             return window.setStaticText(text, cid: cid)

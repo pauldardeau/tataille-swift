@@ -66,6 +66,7 @@ protocol DisplayEngineWindow {
     // ListView
     func addRow(rowText: String, cid: ControlId) -> Bool
     func removeRow(rowIndex: Int, cid: ControlId) -> Bool
+    func removeAllRows(cid: ControlId) -> Bool
 
     func setCheckBoxHandler(handler: CheckBoxHandler, cid: ControlId) -> Bool
     func setComboBoxHandler(handler: ComboBoxHandler, cid: ControlId) -> Bool
