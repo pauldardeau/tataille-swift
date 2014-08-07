@@ -4,7 +4,7 @@
 //
 //  Created by Paul Dardeau on 8/1/14.
 //  Copyright (c) 2014 SwampBits. All rights reserved.
-//
+//  BSD license
 
 import Cocoa
 
