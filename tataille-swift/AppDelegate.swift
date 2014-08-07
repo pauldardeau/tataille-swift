@@ -10,7 +10,7 @@ import Cocoa
 
 class AppDelegate: NSObject, NSApplicationDelegate {
                             
-    @IBOutlet weak var window: NSWindow!
+    @IBOutlet weak var window: NSWindow?
     
     let TOP: CGFloat = 25
     let COMBO_HEIGHT: CGFloat = 26.0
@@ -34,18 +34,18 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     let VALUES_DELIMITER = ","
     let PAYMENT_METHOD_VALUES = "Cash,Amex,Discover,MasterCard,Visa"
     
-    var displayEngine: CocoaDisplayEngine!
-    var cidCustomerLabel: ControlId!
-    var cidEntryField: ControlId!
-    var cidCheckDelivery: ControlId!
-    var cidCheckRush: ControlId!
-    var cidComboPayment: ControlId!
-    var cidListBox: ControlId!
-    var cidListView: ControlId!
-    var cidAddButton: ControlId!
-    var cidRemoveButton: ControlId!
-    var cidOrderButton: ControlId!
-    var cidOrderTotal: ControlId!
+    var displayEngine: CocoaDisplayEngine?
+    var cidCustomerLabel: ControlId?
+    var cidEntryField: ControlId?
+    var cidCheckDelivery: ControlId?
+    var cidCheckRush: ControlId?
+    var cidComboPayment: ControlId?
+    var cidListBox: ControlId?
+    var cidListView: ControlId?
+    var cidAddButton: ControlId?
+    var cidRemoveButton: ControlId?
+    var cidOrderButton: ControlId?
+    var cidOrderTotal: ControlId?
     var listMenuItems = [String]()
     var menuItems = ""
     var listPaymentMethods: [String]!
@@ -228,7 +228,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             buttonEnabled = false
         }
         
-        self.displayEngine!.setEnabled(buttonEnabled, cid:self.cidAddButton)
+        self.displayEngine!.setEnabled(buttonEnabled, cid:self.cidAddButton!)
     }
 
     //**************************************************************************
@@ -243,7 +243,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             buttonEnabled = false
         }
 
-        self.displayEngine!.setEnabled(buttonEnabled, cid:self.cidRemoveButton)
+        self.displayEngine!.setEnabled(buttonEnabled, cid:self.cidRemoveButton!)
     }
 
     //**************************************************************************
@@ -261,13 +261,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
                 let itemPriceAsString = NSString(format:"%.2f", orderItem.itemPrice)
 
-                self.displayEngine!.addRow("\(orderItem.quantity),\(selectedMenuItem),\(itemPriceAsString)", cid:self.cidListView)
+                self.displayEngine!.addRow("\(orderItem.quantity),\(selectedMenuItem),\(itemPriceAsString)", cid:self.cidListView!)
                 self.orderTotal += orderItem.itemPrice
                 let orderTotalString = NSString(format:"%.2f", self.orderTotal)
-                self.displayEngine!.setStaticText(orderTotalString, cid: self.cidOrderTotal)
+                self.displayEngine!.setStaticText(orderTotalString, cid: self.cidOrderTotal!)
                 
                 if self.listOrderItems.count == 1 {
-                    self.displayEngine!.enableControl(self.cidOrderButton)
+                    self.displayEngine!.enableControl(self.cidOrderButton!)
                 }
             }
         }
@@ -280,16 +280,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             let item = self.listOrderItems[self.selectedOrderItemIndex]
             self.orderTotal -= item.itemPrice
             let orderTotalString = NSString(format:"%.2f", self.orderTotal)
-            self.displayEngine!.setStaticText(orderTotalString, cid: self.cidOrderTotal)
+            self.displayEngine!.setStaticText(orderTotalString, cid: self.cidOrderTotal!)
 
             self.listOrderItems.removeAtIndex(self.selectedOrderItemIndex)
-            self.displayEngine!.removeRow(self.selectedOrderItemIndex, cid: self.cidListView)
+            self.displayEngine!.removeRow(self.selectedOrderItemIndex, cid: self.cidListView!)
             
             self.selectedOrderItemIndex = -1
-            self.displayEngine!.disableControl(self.cidRemoveButton)
+            self.displayEngine!.disableControl(self.cidRemoveButton!)
             
             if self.listOrderItems.isEmpty {
-                self.displayEngine!.disableControl(self.cidOrderButton)
+                self.displayEngine!.disableControl(self.cidOrderButton!)
             }
         }
     }
@@ -308,9 +308,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // clear out app for next order
         self.orderTotal = 0.00
         self.listOrderItems.removeAll(keepCapacity: true)
-        self.displayEngine!.removeAllRows(self.cidListView)
-        self.displayEngine!.setStaticText("0.00", cid: self.cidOrderTotal)
-        self.displayEngine!.disableControl(self.cidOrderButton)
+        self.displayEngine!.removeAllRows(self.cidListView!)
+        self.displayEngine!.setStaticText("0.00", cid: self.cidOrderTotal!)
+        self.displayEngine!.disableControl(self.cidOrderButton!)
     }
 
     //**************************************************************************
@@ -345,7 +345,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         x += 10
     
         self.cidEntryField = ControlId(windowId:windowId, controlId:controlId++)
-        ci = ControlInfo(cid:self.cidEntryField)
+        ci = ControlInfo(cid:self.cidEntryField!)
         ci.rect = NSMakeRect(x, y, EF_CUSTOMER_WIDTH, EF_CUSTOMER_HEIGHT)
         de.createEntryField(ci)
     
@@ -353,23 +353,23 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         x += 20
     
         self.cidCheckDelivery = ControlId(windowId:windowId, controlId:controlId++)
-        ci = ControlInfo(cid:self.cidCheckDelivery)
+        ci = ControlInfo(cid:self.cidCheckDelivery!)
         ci.rect = NSMakeRect(x, y - 3, CK_DELIVERY_WIDTH, CK_DELIVERY_HEIGHT)
         ci.text = "Delivery"
         ci.helpCaption = "check if this order is for delivery"
         de.createCheckBox(ci)
-        de.setCheckBoxHandler(DeliveryCheckBoxHandler(appDelegate: self), cid: self.cidCheckDelivery)
+        de.setCheckBoxHandler(DeliveryCheckBoxHandler(appDelegate: self), cid: self.cidCheckDelivery!)
     
         x += CK_DELIVERY_WIDTH
         x += 20
     
         self.cidCheckRush = ControlId(windowId:windowId, controlId:controlId++)
-        ci = ControlInfo(cid:self.cidCheckRush)
+        ci = ControlInfo(cid:self.cidCheckRush!)
         ci.rect = NSMakeRect(x, y - 3, CK_RUSH_WIDTH, CK_RUSH_HEIGHT)
         ci.text = "Rush"
         ci.helpCaption = "check if this is a rush order"
         de.createCheckBox(ci)
-        de.setCheckBoxHandler(RushCheckBoxHandler(appDelegate: self), cid: self.cidCheckRush)
+        de.setCheckBoxHandler(RushCheckBoxHandler(appDelegate: self), cid: self.cidCheckRush!)
     
         x += CK_RUSH_WIDTH
         x += 15
@@ -384,7 +384,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         x += w
     
         self.cidOrderTotal = ControlId(windowId:windowId, controlId:controlId++)
-        ci = ControlInfo(cid:self.cidOrderTotal)
+        ci = ControlInfo(cid:self.cidOrderTotal!)
         ci.rect = NSMakeRect(x, topRowText, LBL_ORDERTOTAL_WIDTH, LBL_ORDERTOTAL_HEIGHT)
         ci.text = "0.00"
         ci.helpCaption = "total cost of order"
@@ -395,70 +395,70 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         y += 15
         
         self.cidComboPayment = ControlId(windowId:windowId, controlId:controlId++)
-        ci = ControlInfo(cid:self.cidComboPayment)
+        ci = ControlInfo(cid:self.cidComboPayment!)
         ci.rect = NSMakeRect(x, y, 120, COMBO_HEIGHT)
         ci.values = PAYMENT_METHOD_VALUES
         ci.helpCaption = "method of payment"
         de.createComboBox(ci)
-        de.setComboBoxHandler(PaymentMethodHandler(appDelegate: self), cid: self.cidComboPayment)
+        de.setComboBoxHandler(PaymentMethodHandler(appDelegate: self), cid: self.cidComboPayment!)
         
         y += COMBO_HEIGHT
         y += 12
     
         self.cidListBox = ControlId(windowId:windowId, controlId:controlId++)
-        ci = ControlInfo(cid:self.cidListBox)
+        ci = ControlInfo(cid:self.cidListBox!)
         ci.rect = NSMakeRect(x, y, LIST_WIDTH, LIST_HEIGHT)
         ci.values = self.menuItems
         ci.valuesDelimiter = VALUES_DELIMITER
         ci.helpCaption = "list of items available for order"
         de.createListBox(ci)
-        de.setListBoxHandler(ListMenuSelectionHandler(appDelegate: self), cid: self.cidListBox)
+        de.setListBoxHandler(ListMenuSelectionHandler(appDelegate: self), cid: self.cidListBox!)
     
         x += LIST_WIDTH
         x += 30
     
         self.cidListView = ControlId(windowId:windowId, controlId:controlId++)
-        ci = ControlInfo(cid:self.cidListView)
+        ci = ControlInfo(cid:self.cidListView!)
         ci.rect = NSMakeRect(x, y, LISTVIEW_WIDTH, LISTVIEW_HEIGHT)
         ci.text = "Group"
         ci.values = "Qty,Item,Price"
         ci.valuesDelimiter = VALUES_DELIMITER
         ci.helpCaption = "list of items on order"
         de.createListView(ci)
-        de.setListViewHandler(OrderListViewHandler(appDelegate: self), cid: self.cidListView)
+        de.setListViewHandler(OrderListViewHandler(appDelegate: self), cid: self.cidListView!)
     
         y += LISTVIEW_HEIGHT
         y += 30
         x = LEFT_EDGE
     
         self.cidAddButton = ControlId(windowId:windowId, controlId:controlId++)
-        ci = ControlInfo(cid:self.cidAddButton)
+        ci = ControlInfo(cid:self.cidAddButton!)
         ci.rect = NSMakeRect(x, y, BTN_ADD_WIDTH, BTN_ADD_HEIGHT)
         ci.text = "Add Item"
         ci.isEnabled = false;
         de.createPushButton(ci)
-        de.setPushButtonHandler(AddPushButtonHandler(appDelegate: self), cid: self.cidAddButton)
+        de.setPushButtonHandler(AddPushButtonHandler(appDelegate: self), cid: self.cidAddButton!)
     
         x += LIST_WIDTH
         x += 30
     
         self.cidRemoveButton = ControlId(windowId:windowId, controlId:controlId++)
-        ci = ControlInfo(cid:self.cidRemoveButton)
+        ci = ControlInfo(cid:self.cidRemoveButton!)
         ci.rect = NSMakeRect(x, y, BTN_REMOVE_WIDTH, BTN_REMOVE_HEIGHT)
         ci.text = "Remove Item"
         ci.isEnabled = false
         de.createPushButton(ci)
-        de.setPushButtonHandler(RemovePushButtonHandler(appDelegate: self), cid: self.cidRemoveButton)
+        de.setPushButtonHandler(RemovePushButtonHandler(appDelegate: self), cid: self.cidRemoveButton!)
     
         x += 150
     
         self.cidOrderButton = ControlId(windowId:windowId, controlId:controlId++)
-        ci = ControlInfo(cid:self.cidOrderButton)
+        ci = ControlInfo(cid:self.cidOrderButton!)
         ci.rect = NSMakeRect(x, y, BTN_ORDER_WIDTH, BTN_ORDER_HEIGHT)
         ci.text = "Place Order"
         ci.isEnabled = false
         de.createPushButton(ci)
-        de.setPushButtonHandler(OrderPushButtonHandler(appDelegate: self), cid: self.cidOrderButton)
+        de.setPushButtonHandler(OrderPushButtonHandler(appDelegate: self), cid: self.cidOrderButton!)
     }
 
     //**************************************************************************
